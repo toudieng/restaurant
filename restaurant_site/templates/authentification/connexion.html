@@ -1,0 +1,523 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion / Inscription</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Times New Roman', Times, serif;
+            background-color: black;
+            min-height: 100vh;
+            color: white; /* Ensure text is white by default for general body */
+        }
+
+        .header {
+            background-image: url("{% static 'images/se_connecter.jpg' %}"); /* Use your actual header background image */
+            background-size: contain; /* Changed to cover to better fit the image, adjust if needed */
+            background-position: center;
+            color: white;
+            padding: 0;
+            position: relative;
+            height: 60vh; /* Adjust height as per image_f1add8.jpg */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 1;
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 70px), 80% 100%, 0 100%); /* Same clip-path as accueil.html */
+        }
+
+        .overlay {
+            background-color: rgba(0, 0, 0, 0.5); /* Dark overlay */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+        }
+
+        .top-nav,
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+        }
+
+        .top-nav .logo {
+            font-size: 1.4rem;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 1px;
+        }
+
+        .top-nav .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 30px;
+            font-size: 0.95rem;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+        }
+
+        .top-nav .nav-links a:hover {
+            color: #ddd;
+            text-decoration: underline;
+            text-decoration-color: white;
+        }
+
+        .header-content {
+            text-align: center;
+            padding-bottom: 80px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-content p {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            max-width: 650px;
+            line-height: 1.5;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 0.2px;
+        }
+
+        .header-content h1 {
+            font-size: 3.2rem; /* Adjusted for "Créez votre compte dès aujourd'hui" */
+            margin-bottom: 25px;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.2;
+            letter-spacing: 1.5px;
+        }
+
+        .header-content .contact-button {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 10px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 0.8px;
+        }
+
+        .header-content .contact-button:hover {
+            background-color: white;
+            color: #333;
+            border-color: white;
+        }
+
+        /* Styling for the new section above the form */
+        .intro-section {
+            background-color: black;
+            color: white;
+            padding: 50px 0 0px 0; /* Adjust padding-bottom to bring forms closer if needed */
+            text-align: center;
+        }
+
+        .intro-section h2 {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+        }
+
+        /* Added new styling for the password recovery text */
+        .intro-section .recovery-title {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 2.8rem; /* Larger font size as in the image */
+            margin-bottom: 15px;
+        }
+
+        .intro-section .recovery-text {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 40px auto; /* Centered and space below */
+            line-height: 1.6;
+            padding: 0 20px; /* Add padding for smaller screens */
+        }
+
+        .intro-section p {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 40px auto; /* Centered and space below */
+            line-height: 1.6;
+        }
+
+        .intro-section .reset-button {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 10px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 0.8px;
+            margin-bottom: 50px; /* Space between button and form section */
+            display: inline-block; /* Allows padding and margin to apply correctly */
+        }
+
+        .intro-section .reset-button:hover {
+            background-color: white;
+            color: #333;
+            border-color: white;
+        }
+
+
+        /* Styling for the forms below the header */
+        .form-section {
+            background-color: black; /* Consistent background */
+            padding: 50px 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align forms to the top within their section */
+            min-height: 40vh; /* Ensure some height below header */
+        }
+
+        .form-container {
+            background-color: #1a1a1a; /* Darker background for the form card area */
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px; /* Limit form width */
+            color: white; /* Text color for the form content */
+        }
+
+        .form-container h3 {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        /* Styling for form inputs */
+        .form-container .form-control {
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            margin-bottom: 15px;
+        }
+
+        .form-container .form-control::placeholder {
+            color: #ccc;
+        }
+
+        .form-container .form-control:focus {
+            background-color: #444;
+            border-color: #666;
+            box-shadow: none;
+            color: white;
+        }
+
+        /* Styling for buttons */
+        .form-container .btn-primary,
+        .form-container .btn-success {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.1rem;
+            margin-top: 10px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .form-container .btn-primary {
+            background-color: #007bff; /* Bootstrap blue */
+            border-color: #007bff;
+        }
+
+        .form-container .btn-success {
+            background-color: #28a745; /* Bootstrap green */
+            border-color: #28a745;
+        }
+
+        .form-container .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+         .form-container .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+        .form-container p {
+            text-align: center;
+            margin-top: 20px;
+            font-family: 'Times New Roman', Times, serif;
+            color: #ccc;
+        }
+
+        .form-container a {
+            color: #007bff; /* Link color */
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .form-container a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        /* Adjust Bootstrap form rendering */
+        .form-container p label {
+            display: block; /* Ensure labels are visible */
+            text-align: left; /* Align labels to the left */
+            margin-bottom: 5px; /* Space between label and input */
+            font-weight: bold; /* Make labels bold for better visibility */
+            color: white; /* Ensure label text is white */
+            font-size: 1rem;
+        }
+        .form-container p input {
+            width: 100%;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: .25rem;
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+        .form-container ul.errorlist {
+            color: #dc3545; /* Bootstrap danger red */
+            list-style-type: none;
+            padding: 0;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            font-size: 0.875rem;
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 768px) {
+            .top-nav {
+                flex-direction: column;
+                padding: 15px 20px;
+            }
+
+            .top-nav .nav-links {
+                margin-top: 15px;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .top-nav .nav-links a {
+                margin: 0 10px 10px 10px;
+            }
+
+            .header {
+                height: 50vh; /* Adjust header height for smaller screens */
+            }
+
+            .header-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .header-content p {
+                font-size: 1rem;
+                padding: 0 20px;
+            }
+
+            .intro-section h2 {
+                font-size: 2.2rem;
+            }
+            .intro-section p {
+                font-size: 1rem;
+                padding: 0 20px;
+            }
+            .intro-section .reset-button {
+                margin-bottom: 30px;
+            }
+            .intro-section .recovery-title {
+                font-size: 2.2rem;
+            }
+            .intro-section .recovery-text {
+                font-size: 1rem;
+            }
+
+            .form-section {
+                padding: 30px 0;
+            }
+
+            .form-container {
+                margin: 0 20px; /* Add horizontal margin on small screens */
+                padding: 30px;
+            }
+
+            .form-container h3 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                height: 45vh;
+                clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), 85% 100%, 0 100%); /* Adjust clip-path */
+            }
+            .header-content h1 {
+                font-size: 2rem;
+            }
+            .header-content p {
+                font-size: 0.9rem;
+            }
+            .top-nav .logo {
+                font-size: 1.2rem;
+            }
+            .top-nav .nav-links a {
+                font-size: 0.85rem;
+                margin: 0 8px 8px 8px;
+            }
+            .intro-section h2 {
+                font-size: 1.8rem;
+            }
+            .intro-section p {
+                font-size: 0.9rem;
+            }
+            .intro-section .reset-button {
+                padding: 8px 20px;
+            }
+            .intro-section .recovery-title {
+                font-size: 1.8rem;
+            }
+            .intro-section .recovery-text {
+                font-size: 0.9rem;
+            }
+            .form-container {
+                padding: 25px;
+            }
+            .form-container h3 {
+                font-size: 1.5rem;
+            }
+            .form-container .btn {
+                font-size: 1rem;
+                padding: 8px;
+            }
+        }
+    </style>
+    <script>
+        function toggleForms() {
+            const loginForm = document.getElementById('login-form-wrapper');
+            const registerForm = document.getElementById('register-form-wrapper');
+
+            if (loginForm.style.display !== 'none') {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            } else {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('login-form-wrapper');
+            const registerForm = document.getElementById('register-form-wrapper');
+
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+        });
+    </script>
+</head>
+<body>
+
+<header class="header">
+    <div class="overlay">
+        <div class="top-nav">
+            <div class="logo">Page d'identification</div>
+            <div class="nav-links">
+                <a href="{% url 'accueil' %}">Accueil</a>
+                <a href="{% url 'connexion' %}">Connexion</a>
+                <a href="#">À propos</a>
+                <a href="#">Support</a>
+                <a href="#">Tarification</a>
+            </div>
+        </div>
+        <div class="header-content">
+            <p>Rejoignez notre communauté en ligne et profitez d'une expérience personnalisée dans notre restaurant. Inscrivez-vous en quelques étapes simples pour accéder à des réservations exclusives et à des offres spéciales.</p>
+            <h1>Créez votre compte dès aujourd'hui</h1>
+            <a href="javascript:void(0);" onclick="toggleForms();" class="contact-button">Créer un compte</a>
+        </div>
+    </div>
+</header>
+
+{% if messages %}
+        <div class="container mt-3">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+<section class="intro-section">
+    <h2 class="recovery-title">Récupérer votre mot de passe</h2>
+    <p class="recovery-text">Si vous avez oublié votre mot de passe, ne vous inquiétez pas. Suivez ce lien pour le réinitialiser rapidement et en toute sécurité afin de retrouver l'accès à votre compte.</p>
+    <a href="{% url 'password_reset' %}" class="reset-button">Réinitialiser le mot de passe</a>
+    <h2>Connexion à votre compte</h2>
+    <p>Veuillez entrer votre Nom d'utilisateur et votre Mot de passe pour accéder à votre espace personnel et découvrir toutes nos offres.</p>
+</section>
+
+<section class="form-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="form-container">
+                    <div id="login-form-wrapper">
+                        <h3>Connexion</h3>
+                        <form method="post" action="{% url 'login' %}">
+                            {% csrf_token %}
+                            {{ login_form.as_p }}
+                            <button type="submit" class="btn btn-primary" name="login">Se connecter</button>
+                        </form>
+                        <p class="mt-3">
+                            </p>
+                    </div>
+
+                    <div id="register-form-wrapper" style="display: none;">
+                        <h3>Inscription</h3>
+                        <form method="post" action="{% url 'register' %}">
+                            {% csrf_token %}
+                            {{ register_form.as_p }}
+                            <button type="submit" class="btn btn-success" name="register">S'inscrire</button>
+                        </form>
+                        <p class="mt-3">
+                            Déjà un compte ? <a href="javascript:void(0);" onclick="toggleForms()">Se connecter</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div style="height: 50px; background-color: black;">
+    </div>
+
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+</body>
+</html>

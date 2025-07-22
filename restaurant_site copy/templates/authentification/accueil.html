@@ -1,0 +1,455 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Accueil Restaurant</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Times New Roman', Times, serif;
+            background-color: black;
+            min-height: 100vh;
+            color: white; /* Ensure text is white by default for general body */
+        }
+
+        .header {
+            background-image: url("{% static 'images/connexion.jpg' %}");
+            background-size: contain;
+            background-position: center;
+            color: white;
+            padding: 0;
+            position: relative;
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 1;
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 70px), 80% 100%, 0 100%);
+        }
+
+        .overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+        }
+
+        .top-nav,
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+        }
+
+        .top-nav .logo {
+            font-size: 1.4rem;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 1px;
+        }
+
+        .top-nav .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 30px;
+            font-size: 0.95rem;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+        }
+
+        .top-nav .nav-links a:hover {
+            color: #ddd;
+            text-decoration: underline;
+            text-decoration-color: white;
+        }
+
+        .header-content {
+            text-align: center;
+            padding-bottom: 80px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-content p {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            max-width: 650px;
+            line-height: 1.5;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 0.2px;
+        }
+
+        .header-content h1 {
+            font-size: 3.2rem;
+            margin-bottom: 25px;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.2;
+            letter-spacing: 1.5px;
+        }
+
+        .header-content .contact-button {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 10px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            font-weight: normal;
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 0.8px;
+        }
+
+        .header-content .contact-button:hover {
+            background-color: white;
+            color: #333;
+            border-color: white;
+        }
+
+        /* Existing Feature Sections */
+        .feature-section,
+        .security-section,
+        .support-section {
+            display: flex;
+            align-items: center;
+            background-color: black;
+            color: white;
+            padding: 50px 0;
+            justify-content: center;
+            margin-top: -1px;
+        }
+
+        .security-section {
+            flex-direction: row-reverse;
+        }
+
+        .support-section {
+            flex-direction: row;
+        }
+
+        .feature-section .image-container,
+        .security-section .image-container,
+        .support-section .image-container {
+            flex: 0 0 50%;
+            max-width: 50%;
+            display: flex;
+        }
+
+        .feature-section .image-container,
+        .support-section .image-container {
+            justify-content: flex-end;
+            padding-right: 20px;
+            padding-left: 0;
+        }
+
+        .security-section .image-container {
+            justify-content: flex-start;
+            padding-left: 20px;
+            padding-right: 0;
+        }
+
+        .feature-section .image-container img,
+        .security-section .image-container img,
+        .support-section .image-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .feature-section .text-content,
+        .security-section .text-content,
+        .support-section .text-content {
+            flex: 0 0 40%;
+            max-width: 40%;
+        }
+
+        .feature-section .text-content,
+        .support-section .text-content {
+            padding-left: 20px;
+            padding-right: 0;
+        }
+
+        .security-section .text-content {
+            padding-right: 20px;
+            padding-left: 0;
+        }
+
+        .feature-section .text-content h2,
+        .security-section .text-content h2,
+        .support-section .text-content h2 {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 2.5rem;
+            font-weight: normal;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .feature-section .text-content p,
+        .security-section .text-content p,
+        .support-section .text-content p {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            font-weight: normal;
+        }
+
+        /* New Key Features Section */
+        .key-features-section {
+            background-color: black;
+            color: white; /* Title and lead text remain white */
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .key-features-section h2 {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 2.8rem;
+            font-weight: normal;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .key-features-section p.lead {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.2rem;
+            margin-bottom: 60px;
+            color: #ccc;
+        }
+
+        .key-features-section .card-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px; /* Space between cards */
+        }
+
+        .key-features-section .card {
+            background-color: white; /* White background for cards */
+            border: 1px solid #ccc; /* Light grey border */
+            border-radius: 8px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 350px; /* Max width for each card */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .key-features-section .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .key-features-section .card img {
+            width: 100%;
+            height: 200px; /* Fixed height for images */
+            object-fit: cover; /* Cover the area, cropping if necessary */
+            border-bottom: 1px solid #ccc;
+        }
+
+        .key-features-section .card-body {
+            padding: 25px;
+            text-align: left; /* Align text within card body */
+            color: black; /* Black text for card body */
+        }
+
+        .key-features-section .card-title {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.8rem;
+            font-weight: bold; /* Make title bolder */
+            margin-bottom: 15px;
+            color: black; /* Black color for title */
+        }
+
+        .key-features-section .card-text {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1rem;
+            color: #333; /* Dark grey for regular text */
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+
+
+        @media (max-width: 768px) {
+            .feature-section,
+            .security-section,
+            .support-section {
+                flex-direction: column;
+                padding: 30px 20px;
+            }
+
+            .feature-section .image-container,
+            .feature-section .text-content,
+            .security-section .image-container,
+            .security-section .text-content,
+            .support-section .image-container,
+            .support-section .text-content {
+                flex: 0 0 100%;
+                max-width: 100%;
+                padding: 0;
+                text-align: center;
+            }
+
+            .feature-section .image-container,
+            .security-section .image-container,
+            .support-section .image-container {
+                margin-bottom: 30px;
+                justify-content: center;
+            }
+
+            .feature-section .image-container img,
+            .security-section .image-container img,
+            .support-section .image-container img {
+                max-width: 80%;
+            }
+
+            .key-features-section h2 {
+                font-size: 2.2rem;
+            }
+
+            .key-features-section p.lead {
+                font-size: 1rem;
+                margin-bottom: 40px;
+            }
+
+            .key-features-section .card {
+                max-width: 90%; /* Adjust card width for smaller screens */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .top-nav {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .top-nav .nav-links {
+                margin-top: 15px;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .top-nav .nav-links a {
+                margin: 0 10px 10px 10px;
+            }
+
+            .header-content h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="overlay">
+        <div class="top-nav">
+            <div class="logo">L'occidental</div>
+            <div class="nav-links">
+                <a href="#">Accueil</a>
+                <a href="{% url 'connexion' %}">Connexion</a>
+                <a href="#">À propos</a>
+                <a href="#">Support</a>
+                <a href="#">Tarification</a>
+            </div>
+        </div>
+        <div class="header-content">
+            <p>Accédez facilement à votre compte utilisateur pour profiter des services de notre restaurant.</p>
+            <h1>Bienvenue sur notre interface de connexion</h1>
+            <a href="#" class="contact-button">Nous contacter</a>
+        </div>
+    </div>
+</header>
+
+<section class="feature-section">
+    <div class="image-container">
+        <img src="{% static 'images/utilisation.jpg' %}" alt="Simplicité d'utilisation">
+    </div>
+    <div class="text-content">
+        <h2>Simplicité d'utilisation</h2>
+        <p>Notre interface intuitive permet aux utilisateurs de se connecter rapidement et facilement.</p>
+    </div>
+</section>
+
+<section class="security-section">
+    <div class="image-container">
+        <img src="{% static 'images/securite.jpg' %}" alt="Sécurité renforcée">
+    </div>
+    <div class="text-content">
+        <h2>Sécurité renforcée</h2>
+        <p>Nous garantissons la sécurité de vos informations personnelles grâce à des protocoles de sécurité avancés.</p>
+    </div>
+</section>
+
+<section class="support-section">
+    <div class="image-container">
+        <img src="{% static 'images/support.jpg' %}" alt="Support client réactif">
+    </div>
+    <div class="text-content">
+        <h2>Support client réactif</h2>
+        <p>Notre équipe est disponible pour vous aider en cas de besoin, assurant une expérience sans tracas.</p>
+    </div>
+</section>
+
+<section class="key-features-section">
+    <h2>Caractéristiques clés</h2>
+    <p class="lead">Découvrez les options qui améliorent votre expérience utilisateur.</p>
+    <div class="container">
+        <div class="row justify-content-center card-container">
+            <div class="col-md-4 col-sm-6 mb-4">
+                <div class="card">
+                    <img src="{% static 'images/connexion_rapide.jpg' %}" class="card-img-top" alt="Connexion rapide">
+                    <div class="card-body">
+                        <h5 class="card-title">Connexion rapide</h5>
+                        <p class="card-text">Accédez à votre compte en quelques clics grâce à notre formulaire de connexion simple.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 mb-4">
+                <div class="card">
+                    <img src="{% static 'images/creation_rapide.jpg' %}" class="card-img-top" alt="Création de compte facile">
+                    <div class="card-body">
+                        <h5 class="card-title">Création de compte facile</h5>
+                        <p class="card-text">Inscrivez-vous en quelques étapes pour profiter pleinement de nos services.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 mb-4">
+                <div class="card">
+                    <img src="{% static 'images/recuperation_mdp.jpg' %}" class="card-img-top" alt="Récupération de mot de passe">
+                    <div class="card-body">
+                        <h5 class="card-title">Récupération de mot de passe</h5>
+                        <p class="card-text">Vous avez oublié votre mot de passe ? Notre outil de récupération vous guide facilement.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div style="height: 100px; background-color: black;">
+</div>
+
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+</body>
+</html>

@@ -20,4 +20,6 @@ urlpatterns = [
         template_name='authentification/renitialisation_password_complet.html'), name='password_reset_complete'),
 
     path('test-email/', views.test_email, name='test_email'),
+    path('client', views.client, name='client'),
+
 ]

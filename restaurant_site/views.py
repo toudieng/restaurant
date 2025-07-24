@@ -124,3 +124,6 @@ def test_email(request):
         status = "error"
 
     return render(request, 'renitialisation_password_terminer.html', {'message': message, 'status': status})
+
+def client(request):
+    return render(request, 'client/client.html')

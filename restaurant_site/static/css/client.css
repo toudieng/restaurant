@@ -1,0 +1,102 @@
+/* Variables de couleurs personnalisées */
+:root {
+    --main-color: #377cff;
+    --secondary-color: #f1fbff;
+    --bg-overlay-color: rgba(103, 108, 109, 0.35);
+    --border-color-light: #f0f3f4;
+    --background-light: #fafbfb;
+}
+
+/* Styles généraux et adaptations Bootstrap */
+body {
+    font-family: "atkinson hyperlegible", sans-serif; /* Exemple de police importée si vous l'avez */
+    margin-bottom: 56px;
+    color: #333;
+}
+
+/* Styles pour la barre de navigation Bootstrap */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: var(--main-color) !important;
+}
+
+.nav-link.active {
+    color: var(--main-color) !important;
+    font-weight: bold;
+}
+
+.nav-link:hover {
+    color: var(--main-color) !important;
+}
+
+/* Section d'accueil avec image de fond */
+.bg-image-section {
+    background-size: cover;
+    background-position: center;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+}
+
+.bg-image-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+
+.bg-image-section > .row {
+    z-index: 2;
+}
+
+/* Boutons */
+.btn-primary {
+    background-color: var(--main-color);
+    border-color: var(--main-color);
+}
+
+.btn-primary:hover {
+    background-color: #5f96ff;
+    border-color: #5f96ff;
+}
+
+.btn-outline-primary {
+    color: var(--main-color);
+    border-color: var(--main-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--main-color);
+    color: white;
+}
+
+/* Styles pour les sections */
+section {
+    padding: 60px 0;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Styles pour le texte avec couleurs personnalisées (ex. si vous aviez des éléments avec ces couleurs dans Strikingly) */
+.text-custom-1 {
+    color: var(--main-color);
+}
+
+.text-custom-2 {
+    color: var(--secondary-color);
+}

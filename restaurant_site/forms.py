@@ -13,6 +13,11 @@ class LoginForm(AuthenticationForm):
     )
 
 class RegisterForm(UserCreationForm):
+    email = forms.EmailField(
+        label="Adresse email",
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
+    )
+
     role = forms.ChoiceField(
         choices=Utilisateur.ROLE_CHOICES,
         widget=forms.Select(attrs={'class': 'form-control'})
@@ -20,7 +25,7 @@ class RegisterForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         model = Utilisateur
-        fields = UserCreationForm.Meta.fields + ('role',)
+        fields = UserCreationForm.Meta.fields + ('email', 'role')  # Ajout de 'email'
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'password1': forms.PasswordInput(attrs={'class': 'form-control'}),
@@ -30,6 +35,8 @@ class RegisterForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['role'].initial = Utilisateur.CLIENT
+        self.fields['role'].disabled=True
+
 
 class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(

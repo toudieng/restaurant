@@ -38,13 +38,16 @@
     }
 
     .login-container {
-      margin-top: 80px;
-      padding: 40px;
-      background-color: white;
-      max-width: 500px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    }
+  margin-top: 10px;
+  padding: 50px;
+  background-color: white;
+  max-width: 1000px; /* Augmentée */
+  min-height: 300px; /* Ajoutée */
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  padding-left: 30px;
+  padding-right: 30px;
+}
 
     .form-section {
       display: flex;
@@ -86,8 +89,18 @@
   <div class="header-content">
     <h1 class="display-5">Bienvenue à L'Occidental</h1>
     <p class="lead">Veuillez vous connecter pour accéder à votre espace personnel</p>
+    <a href="{% url 'admin_login' %}" class="btn btn-outline-light mt-3">Connexion Administrateur</a>
   </div>
 </header>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
+{% endif %}
 
 <section class="form-section" id="formulaire">
 

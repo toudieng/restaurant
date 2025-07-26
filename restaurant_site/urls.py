@@ -8,6 +8,7 @@ urlpatterns = [
     path('login/', views.auth_view, name='login'),
     path('register/', views.register_view, name='register'),
     path('logout/', views.logout, name='logout'),
+    path('admin-login/', views.admin_login_view, name='admin_login'),
 
     # Réinitialisation mot de passe
     path('renitialiser_password/', auth_views.PasswordResetView.as_view(

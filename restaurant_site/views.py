@@ -6,6 +6,7 @@ from django.contrib import messages
 from .forms import LoginForm, RegisterForm, CustomPasswordResetForm
 from .models import Utilisateur
 from django.core.mail import send_mail
+from django.contrib.auth.decorators import user_passes_test
 
 def accueil_view(request): # Nouvelle vue pour l'accueil
     return render(request, 'authentification/accueil.html')
@@ -15,33 +16,25 @@ def auth_view(request):
     register_form = RegisterForm()
 
     if request.method == 'POST':
-        # Connexion
+        # ------------- Connexion ----------------
         if 'login' in request.POST:
             login_form = LoginForm(request, data=request.POST)
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+
+            # Vérification manuelle de l'utilisateur
+            try:
+                user = Utilisateur.objects.get(username=username)
+            except Utilisateur.DoesNotExist:
+                messages.error(request, "Ce compte n'existe pas. Veuillez créer un compte d'abord.")
+                return render(request, 'authentification/connexion.html', {
+                    'login_form': login_form,
+                    'register_form': register_form,
+                })
+
+            # Si l'utilisateur existe, valider le mot de passe
             if login_form.is_valid():
                 user = login_form.get_user()
-                login(request, user)
-
-                # Redirection selon le rôle
-                role = user.role
-                if role == 'Administrateur':
-                    return redirect('admin_dashboard')
-                elif role == 'Client':
-                    return redirect('client_dashboard')
-                elif role == 'Serveur':
-                    return redirect('serveur_dashboard')
-                elif role == 'Cuisinier':
-                    return redirect('cuisinier_dashboard')
-                elif role == 'Caissier':
-                    return redirect('caissier_dashboard')
-                else:
-                    return redirect('accueil')  # Par défaut
-
-        # Inscription
-        elif 'register' in request.POST:
-            register_form = RegisterForm(request.POST)
-            if register_form.is_valid():
-                user = register_form.save()
                 login(request, user)
 
                 role = user.role
@@ -57,6 +50,32 @@ def auth_view(request):
                     return redirect('caissier_dashboard')
                 else:
                     return redirect('accueil')
+            else:
+                messages.error(request, "Mot de passe incorrect.")
+
+        # ------------- Inscription ----------------
+        elif 'register' in request.POST:
+            register_form = RegisterForm(request.POST)
+            if register_form.is_valid():
+                user = register_form.save()
+                login(request, user)
+                messages.success(request, "Inscription réussie. Vous êtes maintenant connecté.")
+
+                role = user.role
+                if role == 'Administrateur':
+                    return redirect('admin_dashboard')
+                elif role == 'Client':
+                    return redirect('client_dashboard')
+                elif role == 'Serveur':
+                    return redirect('serveur_dashboard')
+                elif role == 'Cuisinier':
+                    return redirect('cuisinier_dashboard')
+                elif role == 'Caissier':
+                    return redirect('caissier_dashboard')
+                else:
+                    return redirect('accueil')
+            else:
+                messages.error(request, "Erreur lors de l'inscription. Veuillez corriger les erreurs.")
 
     return render(request, 'authentification/connexion.html', {
         'login_form': login_form,
@@ -130,3 +149,27 @@ def client(request):
 
 def menu(request):
     return render(request, 'client/menu.html')
+
+
+def admin_login_view(request):
+    form = LoginForm(request, data=request.POST or None)
+
+    if request.method == 'POST' and form.is_valid():
+        user = form.get_user()
+        if user.role != 'Administrateur':
+            messages.error(request, "Accès refusé. Ce compte n'est pas un administrateur.")
+        else:
+            login(request, user)
+            return redirect('admin_dashboard')
+
+    return render(request, 'authentification/admin_login.html', {'form': form})
+
+
+# Seul un utilisateur avec le bon rôle accède à sa vue. /  Exemple : le cuisinier ne peut pas voir la vue des serveurs.
+def role_required(role):
+    def decorator(view_func):
+        return user_passes_test(lambda u: u.is_authenticated and u.role == role)(view_func)
+    return decorator
+
+# @role_required('Cuisinier')
+# def vue_cuisinier(request):

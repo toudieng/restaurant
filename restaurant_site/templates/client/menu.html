@@ -1,0 +1,170 @@
+{% extends 'client/base.html' %}
+{% load static %}
+
+{% block title %}Menu - L'occidental{% endblock %}
+
+{% block nav %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">L'occidental</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="client.html#accueil">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#">Menu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="client.html#reservations">Réservations</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="client.html#localisation">Localisation</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="client.html#temoignages">Témoignages</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<main class="container mt-5 pt-5">
+    <section id="menu-culinaire" class="py-5">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2>Savourez l'excellence culinaire</h2>
+                <h4>Un voyage de saveurs inoubliables</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1675718341348-65224936b742" class="card-img-top" alt="Filet de boeuf aux truffes">
+                    <div class="card-body">
+                        <h5 class="card-title"><strong>Filet de boeuf aux truffes</strong></h5>
+                        <p class="card-text">Ce succulent filet de boeuf est accompagné d'une sauce crémeuse aux truffes, rehaussant chaque bouchée d'une richesse inégalée. Servi avec des légumes de saison, ce plat est un incontournable pour les amateurs de viande.</p>
+                        <a href="#1" class="btn btn-outline-primary mt-auto">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1607138679414-93a3d5ff22ff" class="card-img-top" alt="Risotto crémeux aux champignons">
+                    <div class="card-body">
+                        <h5 class="card-title"><strong>Risotto crémeux aux champignons</strong></h5>
+                        <p class="card-text">Préparé avec du riz arborio de qualité, ce risotto crémeux est infusé de champignons sauvages et de parmesan affiné. Chaque cuillerée offre une texture veloutée et un goût umami qui ravira vos papilles.</p>
+                        <a href="#1" class="btn btn-outline-primary mt-auto">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1494250437702-f9b35e10f175" class="card-img-top" alt="Tartare de saumon frais">
+                    <div class="card-body">
+                        <h5 class="card-title"><strong>Tartare de saumon frais</strong></h5>
+                        <p class="card-text">Élaboré avec du saumon frais soigneusement coupé, ce tartare est assaisonné d'une vinaigrette légère et accompagné d'avocat crémeux. Un plat rafraîchissant qui célèbre la mer, parfait pour les amateurs de fruits de mer.</p>
+                        <a href="#1" class="btn btn-outline-primary mt-auto">Découvrir</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="evenements-speciaux" class="container-fluid py-5" style="background-color: #1C1E22; color: white;">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card text-center text-white" style="background-image: url('https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1645536107287-59088714a788'); background-size: cover; background-position: center;">
+                    <div class="card-body" style="background-color: rgba(0, 0, 0, 0.4); padding: 2rem;">
+                        <h5 class="card-title">Menu de saison</h5>
+                        <p class="card-text">Venez découvrir notre menu de saison, conçu avec des ingrédients frais et locaux pour vous offrir une expérience culinaire unique.</p>
+                        <a href="#2" class="btn btn-light mt-auto">Voir</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card text-center text-white" style="background-image: url('https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1628551094939-be00dc24e5e0'); background-size: cover; background-position: center;">
+                    <div class="card-body" style="background-color: rgba(0, 0, 0, 0.4); padding: 2rem;">
+                        <h5 class="card-title">Dégustation de plats</h5>
+                        <p class="card-text">Participez à notre soirée de dégustation, où vous aurez l'occasion de savourer une sélection de nos plats phares, accompagnés de vins soigneusement choisis.</p>
+                        <a href="#2" class="btn btn-light mt-auto">Réserver</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card text-center text-white" style="background-image: url('https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1677070248995-9ca2663fd0ff'); background-size: cover; background-position: center;">
+                    <div class="card-body" style="background-color: rgba(0, 0, 0, 0.4); padding: 2rem;">
+                        <h5 class="card-title">Offre anniversaire</h5>
+                        <p class="card-text">Célébrez votre anniversaire avec nous et bénéficiez d'un dessert offert pour toute réservation de table.</p>
+                        <a href="#2" class="btn btn-light mt-auto">Profiter</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card text-center text-white" style="background-image: url('https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1661775085411-7ad692c9a436'); background-size: cover; background-position: center;">
+                    <div class="card-body" style="background-color: rgba(0, 0, 0, 0.4); padding: 2rem;">
+                        <h5 class="card-title">Brunch dominical</h5>
+                        <p class="card-text">Rejoignez-nous pour notre brunch dominical, où vous pourrez déguster un buffet varié comprenant des plats sucrés et salés.</p>
+                        <a href="#2" class="btn btn-light mt-auto">Réserver</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="accompagnements" class="container py-5">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2>Accompagnez votre repas avec élégance</h2>
+                <h4>Le choix parfait pour chaque plat</h4>
+            </div>
+        </div>
+
+        <div class="row align-items-center mb-5">
+            <div class="col-md-6">
+                <img src="https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1586484703562-4c50069c0320" class="img-fluid rounded shadow" alt="Chardonnay de Bourgogne">
+            </div>
+            <div class="col-md-6 mt-4 mt-md-0">
+                <h5 class="card-title"><strong>Chardonnay de Bourgogne</strong></h5>
+                <p class="card-text">Ce Chardonnay délicat offre des arômes de fruits à chair blanche et une touche de vanille. Sa fraîcheur et son équilibre en font le compagnon idéal pour les plats de poisson et les volailles. Un choix élégant pour compléter votre repas.</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center mb-5 flex-md-row-reverse">
+            <div class="col-md-6">
+                <img src="https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1626364698979-e652e4b27790" class="img-fluid rounded shadow" alt="Cabernet Sauvignon">
+            </div>
+            <div class="col-md-6 mt-4 mt-md-0">
+                <h5 class="card-title"><strong>Cabernet Sauvignon</strong></h5>
+                <p class="card-text">Ce Cabernet Sauvignon puissant est caractérisé par ses notes de fruits noirs et d'épices. Avec ses tanins riches et sa finale longue, il s'accorde parfaitement avec nos viandes grillées et nos plats en sauce. Une expérience gustative inoubliable.</p>
+            </div>
+        </div>
+
+        <div class="row align-items-center mb-5">
+            <div class="col-md-6">
+                <img src="https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1613748277101-221b5647f7ea" class="img-fluid rounded shadow" alt="Cocktail signature">
+            </div>
+            <div class="col-md-6 mt-4 mt-md-0">
+                <h5 class="card-title"><strong>Cocktail signature</strong></h5>
+                <p class="card-text">Découvrez notre cocktail signature, une création originale qui marie des ingrédients frais et des spiritueux de qualité. Parfait pour débuter votre repas ou pour une soirée entre amis, ce cocktail apportera une touche festive à votre expérience.</p>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block footer %}
+<footer class="text-center py-4" style="background-color: #1C1E22; color: #f7ca65;">
+    <p class="mb-0">© 2025 L'occidental. Tous droits réservés.</p>
+</footer>
+{% endblock %}

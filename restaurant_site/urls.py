@@ -21,5 +21,6 @@ urlpatterns = [
 
     path('test-email/', views.test_email, name='test_email'),
     path('client', views.client, name='client'),
+    path('menu', views.menu, name='menu'),
 
 ]

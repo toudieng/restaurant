@@ -1,0 +1,8 @@
+.card-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.card-text {
+    flex-grow: 1; /* Pour que le paragraphe prenne l'espace disponible */
+}

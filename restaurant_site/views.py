@@ -127,3 +127,6 @@ def test_email(request):
 
 def client(request):
     return render(request, 'client/client.html')
+
+def menu(request):
+    return render(request, 'client/menu.html')

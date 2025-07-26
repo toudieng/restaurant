@@ -2,6 +2,9 @@
 {% load static %}
 
 {% block title %}Menu - L'occidental{% endblock %}
+{% block style %}
+    <link rel="stylesheet" href="{% static 'css/client/menu.css' %}">
+{% endblock %}
 
 {% block nav %}
 <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
@@ -34,7 +37,28 @@
 {% endblock %}
 
 {% block content %}
+<header class="d-flex align-items-center justify-content-center text-center text-white">
+    <div class="overlay"></div>
+    <div class="container position-relative">
+        <p class="lead">Accédez facilement à votre compte utilisateur pour profiter des services de notre restaurant.</p>
+        <h1 class="display-4">Bienvenue à l'Occidental</h1>
+        <a href="#" class="btn btn-outline-light mt-3">Commander</a>
+    </div>
+</header>
+
 <main class="container mt-5 pt-5">
+
+
+    <!-- <section id="accueil" class="container-fluid bg-image-section text-white d-flex align-items-center justify-content-center text-center vh-100" style="background-image: url('https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/f_auto,q_auto,w_4096/unsplashcom/photo-1516720066179-a2dba49cd69f'); background-size: cover; background-position: center;">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="mb-3">Découvrez l'élégance et le raffinement de notre restaurant, où chaque plat est une œuvre d'art.</h4>
+                <h1 class="display-4 mb-4">Bienvenue au L'occidental</h1>
+                <a href="#menu" class="btn btn-primary btn-lg">Commander</a>
+            </div>
+        </div>
+    </section> -->
+
     <section id="menu-culinaire" class="py-5">
         <div class="row text-center mb-5">
             <div class="col-12">

@@ -2,11 +2,11 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class Utilisateur(AbstractUser):
-    ADMINISTRATEUR = 'administrateur'
-    CLIENT = 'client'
-    SERVEUR = 'serveur'
-    CUISINIER = 'cuisinier'
-    CAISSIER = 'caissier'
+    ADMINISTRATEUR = 'Administrateur'
+    CLIENT = 'Client'
+    SERVEUR = 'Serveur'
+    CUISINIER = 'Cuisinier'
+    CAISSIER = 'Caissier'
 
     ROLE_CHOICES = [
         (ADMINISTRATEUR, 'Administrateur'),

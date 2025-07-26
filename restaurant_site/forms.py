@@ -42,3 +42,18 @@ class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={'class': 'form-control'})
     )
+
+# Un formulaire de création du personnel, dans administarteur
+class AjoutPersonnelForm(UserCreationForm):
+    class Meta:
+        model = Utilisateur
+        fields = ['username', 'role', 'password1', 'password2']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Limiter les rôles uniquement au personnel (pas Client ni Admin ici)
+        self.fields['role'].choices = [
+            ('Serveur', 'Serveur'),
+            ('Cuisinier', 'Cuisinier'),
+            ('Caissier', 'Caissier')
+        ]

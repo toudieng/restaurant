@@ -2,6 +2,9 @@
 {% load static %}
 
 {% block title %}Menu - L'occidental{% endblock %}
+{% block style %}
+    <link rel="stylesheet" href="{% static 'css/client/menu.css' %}">
+{% endblock %}
 
 {% block nav %}
 <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
@@ -34,7 +37,17 @@
 {% endblock %}
 
 {% block content %}
+<header class="d-flex align-items-center justify-content-center text-center text-white">
+    <div class="overlay"></div>
+    <div class="container position-relative">
+        <p class="lead">Découvrez l'élégance et le raffinement de notre restaurant, où chaque plat est une œuvre d'art.</p>
+        <h1 class="display-4">Bienvenue à l'Occidental</h1>
+        <a href="#" class="btn btn-outline-light mt-3">Voir le menu</a>
+    </div>
+</header>
+
 <main class="container mt-5 pt-5">
+
     <section id="menu-culinaire" class="py-5">
         <div class="row text-center mb-5">
             <div class="col-12">
@@ -43,38 +56,31 @@
             </div>
         </div>
         <div class="row">
+            {% for plat in plats %}
             <div class="col-lg-4 col-md-6 mb-4">
                 <div class="card h-100 shadow-sm">
-                    <img src="https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1675718341348-65224936b742" class="card-img-top" alt="Filet de boeuf aux truffes">
+                    <img src="{{ plat.image.url }}" class="card-img-top" alt="{{ plat.nom }}">
                     <div class="card-body">
-                        <h5 class="card-title"><strong>Filet de boeuf aux truffes</strong></h5>
-                        <p class="card-text">Ce succulent filet de boeuf est accompagné d'une sauce crémeuse aux truffes, rehaussant chaque bouchée d'une richesse inégalée. Servi avec des légumes de saison, ce plat est un incontournable pour les amateurs de viande.</p>
-                        <a href="#1" class="btn btn-outline-primary mt-auto">Découvrir</a>
+                        <h5 class="card-title"><strong>{{ plat.nom }}</strong>
+                            {% if plat.specialite_du_jour %}
+                                <span class="badge bg-warning text-dark ms-2">Spécialité du jour</span>
+                            {% endif %}
+                            {% if plat.est_epuise %}
+                                <span class="badge bg-warning text-dark ms-2">Epuisé</span>
+                            {% endif %}
+                        </h5>
+                        <p class="card-text">{{ plat.description }}</p>
+                        <p class="card-text"><strong>Prix : {{ plat.prix }} F CFA</strong></p>
+                        <form action="{% url 'ajouter_au_panier' plat.id %}" method="post" class="mt-auto">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary w-100">Ajouter au panier</button>
+                        </form>
+                        <!-- <a href="#" class="btn btn-outline-primary mt-auto">Découvrir</a> -->
                     </div>
                 </div>
             </div>
-    
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <img src="https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1607138679414-93a3d5ff22ff" class="card-img-top" alt="Risotto crémeux aux champignons">
-                    <div class="card-body">
-                        <h5 class="card-title"><strong>Risotto crémeux aux champignons</strong></h5>
-                        <p class="card-text">Préparé avec du riz arborio de qualité, ce risotto crémeux est infusé de champignons sauvages et de parmesan affiné. Chaque cuillerée offre une texture veloutée et un goût umami qui ravira vos papilles.</p>
-                        <a href="#1" class="btn btn-outline-primary mt-auto">Découvrir</a>
-                    </div>
-                </div>
-            </div>
-    
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <img src="https://user-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_clip,w_960,h_720,f_auto,q_auto/unsplashcom/photo-1494250437702-f9b35e10f175" class="card-img-top" alt="Tartare de saumon frais">
-                    <div class="card-body">
-                        <h5 class="card-title"><strong>Tartare de saumon frais</strong></h5>
-                        <p class="card-text">Élaboré avec du saumon frais soigneusement coupé, ce tartare est assaisonné d'une vinaigrette légère et accompagné d'avocat crémeux. Un plat rafraîchissant qui célèbre la mer, parfait pour les amateurs de fruits de mer.</p>
-                        <a href="#1" class="btn btn-outline-primary mt-auto">Découvrir</a>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
+
         </div>
     </section>
 

@@ -1,0 +1,33 @@
+.card-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.card-text {
+    flex-grow: 1; /* Pour que le paragraphe prenne l'espace disponible */
+}
+
+header {
+    position: relative;
+    background-image: url("/media/images/connexion.jpg"); /* Vérifiez ce chemin ! */
+    background-size: cover; /* CHANGEMENT ICI */
+    background-position: center;
+    background-repeat: no-repeat; /* NOUVELLE PROPRIÉTÉ ICI */
+    justify-content: space-between; /* Cette propriété n'a pas d'effet sur le header */
+    height: 60vh;
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+}
+
+.overlay {
+      background-color: rgba(0, 0, 0, 0.4);
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+    } 
+
+#menu-culinaire{
+    border: 1px solid aliceblue;
+    max-height: 500px;
+    overflow: scroll;
+    margin-bottom: 50px;
+    scrollbar-width: 2px;
+}

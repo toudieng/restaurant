@@ -23,5 +23,11 @@ urlpatterns = [
     path('test-email/', views.test_email, name='test_email'),
     path('client', views.client, name='client'),
     path('menu', views.menu, name='menu'),
+    path('panier/ajouter/<int:plat_id>/', views.ajouter_au_panier, name='ajouter_au_panier'),
+    path('panier/', views.voir_panier, name='voir_panier'),
+    path('panier/supprimer/<int:plat_id>/', views.supprimer_du_panier, name='supprimer_du_panier'),
+    path('panier/modifier/<int:plat_id>/<str:action>/', views.modifier_quantite, name='modifier_quantite'),
+    path('commande/valider/', views.valider_commande, name='valider_commande'),
+    path('reservation/', views.faire_reservation, name='faire_reservation'),
 
 ]

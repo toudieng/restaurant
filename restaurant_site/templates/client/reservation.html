@@ -1,0 +1,32 @@
+{% extends 'client/base.html' %}
+{% load static %}
+
+{% block title %}Réservation{% endblock %}
+
+{% block content %}
+<main class="container mt-5 pt-5">
+    <section id="reservation-form" class="py-5">
+        <h2 class="text-center mb-4">Réserver une table</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form action="{% url 'faire_reservation' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="date_reservation" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="date_reservation" name="date_reservation" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="heure_reservation" class="form-label">Heure</label>
+                        <input type="time" class="form-control" id="heure_reservation" name="heure_reservation" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nombre_personnes" class="form-label">Nombre de personnes</label>
+                        <input type="number" class="form-control" id="nombre_personnes" name="nombre_personnes" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Soumettre la réservation</button>
+                </form>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

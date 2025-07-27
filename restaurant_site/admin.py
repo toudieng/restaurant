@@ -7,7 +7,7 @@ from django.contrib.auth.admin import UserAdmin
 @admin.register(Categorie)
 class CategorieAdmin(admin.ModelAdmin):
     list_display = ('id', 'nom')
-    earch_fields = ('nom',)
+    search_fields = ('nom',)
 
 @admin.register(Plat)
 class PlatAdmin(admin.ModelAdmin):

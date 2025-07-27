@@ -12,10 +12,12 @@ urlpatterns = [
     
 
     path('client/', views.client_dashboard, name='client'),
-     path('menu', views.menu, name='menu'),
+    path('menu', views.menu, name='menu'),
     path('serveur/', views.serveur_dashboard, name='serveur'),
     path('cuisinier/', views.cuisinier_dashboard, name='cuisinier'),
     path('caissier/', views.caissier_dashboard, name='caissier'),
+    path('commandes/', views.commandes_view, name='commandes'),
+    path('notifications/', views.notifications_view, name='notifications'),
 
     path('renitialiser_password/', auth_views.PasswordResetView.as_view(
         template_name='authentification/renitialiser_password.html'), name='password_reset'),

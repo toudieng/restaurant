@@ -117,3 +117,11 @@ def test_email(request):
         fail_silently=False,
     )
     return render(request, 'authentification/email_envoye.html')
+
+
+
+def commandes_view(request):
+    return render(request, 'cuisinier/commandes.html')
+
+def notifications_view(request):
+    return render(request, 'cuisinier/notifications.html')

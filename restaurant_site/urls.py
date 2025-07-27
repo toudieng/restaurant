@@ -8,9 +8,8 @@ urlpatterns = [
     path('connexion/', views.auth_view, name='connexion'),
     path('login/', views.auth_view, name='login'),
     path('register/', views.auth_view, name='register'),
-    path('logout/', views.logout_view, name='logout'),
+    # path('logout/', views.logout_view, name='logout'),
     
-
     path('client/', views.client_dashboard, name='client'),
     path('menu', views.menu, name='menu'),
     path('serveur/', views.serveur_dashboard, name='serveur'),
@@ -30,7 +29,7 @@ urlpatterns = [
 
     path('test-email/', views.test_email, name='test_email'),
 
-    path('client', views.client, name='client'),
+    # path('client', views.client, name='client'),
     path('menu', views.menu, name='menu'),
     path('panier/ajouter/<int:plat_id>/', views.ajouter_au_panier, name='ajouter_au_panier'),
     path('panier/', views.voir_panier, name='voir_panier'),

@@ -264,16 +264,16 @@ def serveur_dashboard(request):
 
 @role_required('Cuisinier')
 def cuisinier_dashboard(request):
-    return render(request, 'cuisinier.html')
+    return render(request, 'cuisinier/cuisinier.html')
 
 @role_required('Caissier')
 def caissier_dashboard(request):
     return render(request, 'caissier.html')
 
-def logout_view(request):
-    auth_logout(request)
-    messages.success(request, "Déconnexion réussie.")
-    return redirect('connexion')
+# def logout_view(request):
+#     auth_logout(request)
+#     messages.success(request, "Déconnexion réussie.")
+#     return redirect('connexion')
 
 def test_email(request):
     send_mail(

@@ -144,3 +144,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'diopnoumse@gmail.com'
 EMAIL_HOST_PASSWORD = 'hecxmapjobgcdylb'
 DEFAULT_FROM_EMAIL = 'diopnoumse@gmail.com'
+
+LOGIN_URL = '/connexion/'
+
+

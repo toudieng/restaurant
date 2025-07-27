@@ -2,15 +2,21 @@ from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
 
+
 urlpatterns = [
     path('', views.accueil_view, name='accueil'),
     path('connexion/', views.auth_view, name='connexion'),
     path('login/', views.auth_view, name='login'),
-    path('register/', views.register_view, name='register'),
-    path('logout/', views.logout, name='logout'),
-    path('admin-login/', views.admin_login_view, name='admin_login'),
+    path('register/', views.auth_view, name='register'),
+    path('logout/', views.logout_view, name='logout'),
+    
 
-    # Réinitialisation mot de passe
+    path('client/', views.client_dashboard, name='client'),
+     path('menu', views.menu, name='menu'),
+    path('serveur/', views.serveur_dashboard, name='serveur'),
+    path('cuisinier/', views.cuisinier_dashboard, name='cuisinier'),
+    path('caissier/', views.caissier_dashboard, name='caissier'),
+
     path('renitialiser_password/', auth_views.PasswordResetView.as_view(
         template_name='authentification/renitialiser_password.html'), name='password_reset'),
     path('renitialisation_password_terminer/', auth_views.PasswordResetDoneView.as_view(
@@ -21,6 +27,7 @@ urlpatterns = [
         template_name='authentification/renitialisation_password_complet.html'), name='password_reset_complete'),
 
     path('test-email/', views.test_email, name='test_email'),
+
     path('client', views.client, name='client'),
     path('menu', views.menu, name='menu'),
     path('panier/ajouter/<int:plat_id>/', views.ajouter_au_panier, name='ajouter_au_panier'),

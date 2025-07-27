@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Categorie, Plat
-from .models import Utilisateur, Commande, LigneDeCommande
+from .models import Utilisateur, Commande, LigneDeCommande, Reservation
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -38,7 +38,7 @@ class LigneDeCommandeInline(admin.TabularInline):
 
 @admin.register(Commande)
 class CommandeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'client', 'date_commande', 'statut', 'total_paiement')
+    list_display = ('id', 'client', 'client_id', 'date_commande', 'statut', 'total_paiement')
     list_filter = ('statut', 'date_commande')
     search_fields = ('client__username', 'id')
     readonly_fields = ['date_commande', 'total_paiement']
@@ -48,3 +48,10 @@ class CommandeAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         obj.calculer_total()
+
+@admin.register(Reservation)
+class ReservationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'client', 'client_id', 'date_reservation', 'heure_reservation', 'nombre_personnes', 'est_confirmee', 'created_at')
+    list_filter = ('est_confirmee',)
+    search_fields = ('client__username', 'date_reservation')
+    list_editable = ('est_confirmee',)

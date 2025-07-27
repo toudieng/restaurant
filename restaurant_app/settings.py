@@ -54,6 +54,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'restaurant_site.context_processors.panier_context',
             ],
         },
     },
@@ -146,5 +147,9 @@ EMAIL_HOST_PASSWORD = 'hecxmapjobgcdylb'
 DEFAULT_FROM_EMAIL = 'diopnoumse@gmail.com'
 
 LOGIN_URL = '/connexion/'
+
+WAVE_API_BASE_URL = 'https://api.digitalpaye.com/v1/collecte/wave-money'
+WAVE_API_KEY = 'votre_cle_api'
+WAVE_SECRET_KEY = 'votre_cle_secrete'
 
 

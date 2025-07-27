@@ -6,88 +6,53 @@
 
 {% block content %}
 <main class="container mt-5 pt-5">
-    <div class="card mt-4 shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title">Informations de commande et de paiement</h5>
-            <form action="{% url 'valider_commande' %}" method="post">
-                {% csrf_token %}
-                
-                <div class="mb-3">
-                    <label class="form-label">Mode de commande</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="mode_commande" id="service_en_salle" value="salle" checked>
-                        <label class="form-check-label" for="service_en_salle">
-                            Service en salle
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="mode_commande" id="livraison" value="livraison">
-                        <label class="form-check-label" for="livraison">
-                            Livraison à domicile
-                        </label>
-                    </div>
-                </div>
+    <h2>Votre Panier</h2>
+    {% if panier %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix unitaire</th>
+                <th>Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for plat_id, item in panier.items %}
+            <tr>
+                <td>{{ item.nom }}</td>
+                <td>
+                    <form action="{% url 'modifier_quantite' plat_id=plat_id %}" method="post" class="d-flex">
+                        {% csrf_token %}
+                        <input type="number" name="quantite" value="{{ item.quantite }}" min="1" class="form-control me-2" style="width: 80px;">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Mettre à jour</button>
+                    </form>
+                </td>
+                <td>{{ item.prix }} F CFA</td>
+                <td>{{ item.total }} F CFA</td>
+                <td>
+                    <a href="{% url 'supprimer_du_panier' plat_id=plat_id %}" class="btn btn-danger btn-sm">Supprimer</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-                <div id="section_salle">
-                    <div class="mb-3">
-                        <label for="reservation_id" class="form-label">Sélectionnez une réservation</label>
-                        <select class="form-select" id="reservation_id" name="reservation_id" required>
-                            {% if réservations %}
-                                {% for res in réservations %}
-                                    <option value="{{ res.id }}">Réservation du {{ res.date_réservation }} à {{ res.heure_réservation }} pour {{ res.nombre_personnes }} personnes</option>
-                                {% endfor %}
-                            {% else %}
-                                <option value="" disabled selected>Vous n'avez pas de réservation active.</option>
-                            {% endif %}
-                        </select>
-                    </div>
-                </div>
-
-                <div id="section_livraison" style="display: none;">
-                    <div class="mb-3">
-                        <label for="adresse_input" class="form-label">Adresse de livraison</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="adresse_option" id="saisie_manuelle" value="saisie" checked>
-                            <label class="form-check-label" for="saisie_manuelle">
-                                Saisie manuelle
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="adresse_option" id="choix_sur_carte" value="carte">
-                            <label class="form-check-label" for="choix_sur_carte">
-                                Choisir sur la carte
-                            </label>
-                        </div>
-                    </div>
-                    <div class="mb-3" id="adresse_manuelle">
-                        <input type="text" class="form-control" id="adresse_input" name="adresse_input">
-                    </div>
-                    <div class="mb-3" id="carte_map" style="height: 300px; display: none;">
-                        <div id="mapid" style="height: 100%;"></div>
-                        <input type="hidden" id="coordonnees_livraison" name="coordonnees_livraison">
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="telephone" class="form-label">Numéro de téléphone</label>
-                    <input type="tel" class="form-control" id="telephone" name="telephone" required>
-                </div>
-                
-                <div class="mb-3">
-                    <label for="methode_paiement" class="form-label">Méthode de paiement</label>
-                    <select class="form-select" id="methode_paiement" name="methode_paiement" required>
-                        <option value="">Sélectionner une méthode</option>
-                        <option value="wave">Wave</option>
-                        <option value="orange_money">Orange Money</option>
-                        <option value="kpay">KPay</option>
-                        <option value="carte_bancaire">Carte Bancaire</option>
-                        </select>
-                </div>
-                
-                <button type="submit" class="btn btn-success w-100">Procéder au paiement</button>
-            </form>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <h4>Total du Panier :</h4>
+        <h4><strong>{{ total }} F CFA</strong></h4>
     </div>
+
+    <div class="mt-4 text-end">
+        <a href="{% url 'validation_commande' %}" class="btn btn-primary btn-lg">Passer à la commande</a>
+    </div>
+
+    {% else %}
+    <div class="alert alert-info">
+        Votre panier est vide. <a href="{% url 'menu' %}">Retourner au menu</a>.
+    </div>
+    {% endif %}
 </main>
 {% endblock %}
 

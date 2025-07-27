@@ -22,6 +22,7 @@ class Utilisateur(AbstractUser):
         verbose_name_plural = 'Utilisateurs'
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=CLIENT)
+    telephone = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
         return f"{self.username} - {self.role}"
@@ -89,6 +90,8 @@ class Commande(models.Model):
     date_commande = models.DateTimeField(auto_now_add=True)
     statut = models.CharField(max_length=20, choices=STATUT_COMMANDE, default='en_attente')
     total_paiement = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    transaction_id = models.CharField(max_length=100, null=True, blank=True)
+
     
     # Nouveaux champs pour la gestion des options
     mode_commande = models.CharField(max_length=20, choices=MODE_COMMANDE, default='salle')

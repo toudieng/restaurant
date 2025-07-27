@@ -9,6 +9,10 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Plat, Reservation, LigneDeCommande, Commande, Utilisateur
 from .forms import LoginForm, RegisterForm, AjoutPersonnelForm
 
+from restaurant_app.paydunya_sdk.checkout import CheckoutInvoice, PaydunyaSetup
+from .paydunya_config import PaydunyaSetup
+from django.shortcuts import render, redirect
+
 
 def role_required(role):
     def decorator(view_func):
@@ -199,17 +203,17 @@ def faire_reservation(request):
 # VUES DE COMMANDE ET DE PAIEMENT
 # =============================================================
 
-MODE_TEST_PAIEMENT = True
+# MODE_TEST_PAIEMENT = True
 
-def handle_mock_payment(request, commande):
-    print(f"Mode de test activé : Paiement simulé pour la commande #{commande.id}.")
-    commande.statut = 'en_cours'
-    commande.save()
+# def handle_mock_payment(request, commande):
+#     print(f"Mode de test activé : Paiement simulé pour la commande #{commande.id}.")
+#     commande.statut = 'en_cours'
+#     commande.save()
     
-    if 'panier' in request.session:
-        del request.session['panier']
+#     if 'panier' in request.session:
+#         del request.session['panier']
     
-    return render(request, 'client/confirmation_commande.html', {'commande': commande})
+#     return render(request, 'client/confirmation_commande.html', {'commande': commande})
 
 
 @login_required
@@ -227,6 +231,102 @@ def validation_commande(request):
         'reservations': reservations
     }
     return render(request, 'client/validation_commande.html', context)
+
+def payer_commande(request):
+    if not request.user.is_authenticated:
+        return redirect('connexion')
+
+    panier = request.session.get('panier', {})
+    if not panier:
+        messages.error(request, "Votre panier est vide.")
+        return redirect('menu')
+
+    invoice = CheckoutInvoice()
+
+    # 🛒 Ajout dynamique du panier
+    total = 0
+    for plat_id, item in panier.items():
+        prix = float(item['prix'])
+        quantite = int(item['quantite'])
+        invoice.add_item(
+            name=item['nom'],
+            quantity=quantite,
+            unit_price=prix
+        )
+        total += prix * quantite
+
+    invoice.total_amount = total
+    invoice.description = "Commande sur L'occidental"
+
+    # 🔁 URLs de redirection
+    invoice.return_url = request.build_absolute_uri('/commande/success/')
+    invoice.cancel_url = request.build_absolute_uri('/commande/cancel/')
+
+    # 👤 Infos client à inclure dans custom_data du payload
+    invoice.customer_name = request.user.get_full_name() or request.user.username
+    invoice.customer_email = request.user.email
+    invoice.customer_phone_number = request.user.telephone  # Assure-toi que ce champ est bien dans ton modèle
+
+    # 📤 Création de la facture et redirection vers PayDunya
+    if invoice.create():
+        return redirect(invoice.url)
+    else:
+        return render(request, 'client/erreur.html', {'message': invoice.response_text})
+
+
+def paiement_success(request):
+    token = request.GET.get("token")
+    invoice = CheckoutInvoice()
+    confirmation = invoice.confirm(token)  # Nouvelle méthode confirm(token)
+
+    if confirmation.get("status") == "completed":
+        panier = request.session.get('panier', {})
+        if not panier:
+            return render(request, 'client/erreur.html', {'message': "Aucun panier trouvé."})
+
+        # Création de la commande
+        commande = Commande.objects.create(
+            client=request.user,
+            total_paiement=invoice.total_amount,  # ou confirmation.get("amount") ?
+            statut='payé',
+            transaction_id=token  # utile pour suivi
+        )
+
+        for plat_id, item in panier.items():
+            plat = Plat.objects.get(id=plat_id)
+            LigneDeCommande.objects.create(
+                commande=commande,
+                plat=plat,
+                quantite=item['quantite'],
+                prix_unitaire=item['prix']
+            )
+
+        # 🔥 Calculer et sauvegarder le total de la commande
+        commande.calculer_total()
+
+        # Vider le panier
+        del request.session['panier']
+        request.session.modified = True
+
+        return render(request, 'client/confirmation_commande.html', {
+            'commande': commande,
+            'transaction': token
+        })
+    else:
+        message = confirmation.get("message", "Paiement non confirmé.")
+        return render(request, 'client/erreur.html', {'message': message})
+
+
+@login_required
+def mes_commandes(request):
+    commandes = Commande.objects.filter(client=request.user).order_by('-date')
+    return render(request, 'client/mes_commandes.html', {'commandes': commandes})
+
+@login_required
+def detail_commande(request, commande_id):
+    commande = Commande.objects.get(id=commande_id, client=request.user)
+    lignes = commande.lignecommande_set.select_related('plat')
+    return render(request, 'client/detail_commande.html', {'commande': commande, 'lignes': lignes})
 
 
 @login_required
@@ -289,10 +389,7 @@ def traitement_commande(request):
                     return render(request, 'client/confirmation_commande.html', {'commande': commande})
                 
                 elif methode_paiement in ['wave', 'orange_money', 'kpay', 'carte_bancaire']:
-                    if MODE_TEST_PAIEMENT:
-                        return handle_mock_payment(request, commande)
-                    else:
-                        return HttpResponse(f"Paiement {methode_paiement} en cours d'intégration...")
+                    return redirect('payer_commande')
                 
                 else:
                     return HttpResponse("Méthode de paiement non valide.", status=400)
@@ -308,10 +405,6 @@ def traitement_commande(request):
 # VUES D'ADMINISTRATION
 # =============================================================
 
-
-def client(request):
-    return render(request, )
-
 @role_required('Serveur')
 def serveur_dashboard(request):
     return render(request, 'serveur.html')
@@ -324,7 +417,6 @@ def cuisinier_dashboard(request):
 def caissier_dashboard(request):
     return render(request, 'caissier.html')
 
-<<<<<<< Updated upstream
 # def logout_view(request):
 #     auth_logout(request)
 #     messages.success(request, "Déconnexion réussie.")

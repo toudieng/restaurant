@@ -1,0 +1,33 @@
+{% extends 'client/base.html' %}
+{% block title %}Mes commandes{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <h2>Mes Commandes</h2>
+
+    {% if commandes %}
+        <table class="table table-bordered table-hover mt-4">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Montant</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for commande in commandes %}
+                <tr>
+                    <td>{{ commande.date|date:"d/m/Y H:i" }}</td>
+                    <td>{{ commande.montant_total }} F CFA</td>
+                    <td>{{ commande.statut|capfirst }}</td>
+                    <td><a href="{% url 'detail_commande' commande.id %}" class="btn btn-sm btn-outline-primary">Voir détails</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune commande enregistrée.</p>
+    {% endif %}
+</div>
+{% endblock %}

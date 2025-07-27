@@ -41,10 +41,11 @@
 
     <div class="d-flex justify-content-between align-items-center mt-4">
         <h4>Total du Panier :</h4>
-        <h4><strong>{{ total }} F CFA</strong></h4>
+        <h4><strong>{{ total_panier }} F CFA</strong></h4>
     </div>
 
-    <div class="mt-4 text-end">
+    <div class="mt-4 d-flex justify-content-between">
+        <a href="{% url 'menu' %}" class="btn btn-outline-secondary">← Retour au menu</a>
         <a href="{% url 'validation_commande' %}" class="btn btn-primary btn-lg">Passer à la commande</a>
     </div>
 
@@ -54,47 +55,4 @@
     </div>
     {% endif %}
 </main>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const modeCommandeRadios = document.querySelectorAll('input[name="mode_commande"]');
-        const sectionLivraison = document.getElementById('section_livraison');
-        const sectionSalle = document.getElementById('section_salle');
-        const methodePaiementSelect = document.getElementById('methode_paiement');
-
-        function toggleModeCommande() {
-            if (document.getElementById('livraison').checked) {
-                sectionLivraison.style.display = 'block';
-                sectionSalle.style.display = 'none';
-                
-                // Masquer l'option espèces
-                methodePaiementSelect.innerHTML = `
-                    <option value="">Sélectionner une méthode</option>
-                    <option value="wave">Wave</option>
-                    <option value="orange_money">Orange Money</option>
-                    <option value="kpay">KPay</option>
-                    <option value="carte_bancaire">Carte Bancaire</option>
-                `;
-            } else { // Service en salle
-                sectionLivraison.style.display = 'none';
-                sectionSalle.style.display = 'block';
-                
-                // Afficher l'option espèces
-                methodePaiementSelect.innerHTML = `
-                    <option value="">Sélectionner une méthode</option>
-                    <option value="especes">Espèces (à la caisse)</option>
-                    <option value="wave">Wave</option>
-                    <option value="orange_money">Orange Money</option>
-                    <option value="kpay">KPay</option>
-                    <option value="carte_bancaire">Carte Bancaire</option>
-                `;
-            }
-        }
-        
-        modeCommandeRadios.forEach(radio => radio.addEventListener('change', toggleModeCommande));
-        toggleModeCommande(); // Appel initial au chargement de la page
-    });
-</script>
 {% endblock %}

@@ -7,7 +7,9 @@ urlpatterns = [
     path('', views.accueil_view, name='accueil'),
     path('connexion/', views.auth_view, name='connexion'),
     path('register/', views.auth_view, name='register'),
-    path('menu', views.menu, name='menu'),
+    path('logout/', views.logout_view, name='logout'),
+    path('menu/', views.menu, name='menu'),
+    path('client/', views.client, name='client'),
     path('serveur/', views.serveur_dashboard, name='serveur'),
     path('cuisinier/', views.cuisinier_dashboard, name='cuisinier'),
     path('caissier/', views.caissier_dashboard, name='caissier'),
@@ -23,6 +25,7 @@ urlpatterns = [
         
     path('test-email/', views.test_email, name='test_email'),
 
+    path('panier/', views.voir_panier, name='panier'),
     path('panier/ajouter/<int:plat_id>/', views.ajouter_au_panier, name='ajouter_au_panier'),
     path('panier/modifier/<int:plat_id>/', views.modifier_quantite, name='modifier_quantite'),
     path('panier/supprimer/<int:plat_id>/', views.supprimer_du_panier, name='supprimer_du_panier'),
@@ -31,4 +34,10 @@ urlpatterns = [
     path('commande/valider/', views.validation_commande, name='validation_commande'),
     path('commande/traitement/', views.traitement_commande, name='traitement_commande'),
     path('reservation/', views.faire_reservation, name='faire_reservation'),
+    path('commande/paiement/', views.payer_commande, name='payer_commande'),
+    path('commande/success/', views.paiement_success, name='paiement_success'),
+    path('mes-commandes/', views.mes_commandes, name='mes_commandes'),
+    path('commande/<int:commande_id>/', views.detail_commande, name='detail_commande'),
+
+
 ]

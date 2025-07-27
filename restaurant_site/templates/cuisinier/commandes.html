@@ -130,8 +130,49 @@ header .container {
 <!-- Features -->
 <section class="container-fluid py-5 text-center" style="background-color: #000;">
   <h2 class="display-5 text-white">Détails de la commande</h2>
-  <p class="lead text-white">Accédez aux informations complètes sur vos commandes.</p>
+  <p class="lead text-white">Accédez aux informations complètes sur nos commandes.</p>
+
+  <div class="container mt-4">
+    {% for commande in commandes %}
+      <div class="card bg-dark text-white mb-4 shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Commande #{{ commande.id }} | Client : {{ commande.client.username }}</span>
+          <span>{{ commande.date_commande|date:"d/m/Y H:i" }}</span>
+        </div>
+        <div class="card-body">
+          <!-- TABLEAU AVEC FOND CLAIR -->
+          <table class="table table-bordered table-light table-hover m-0 text-dark">
+            <thead class="table-secondary">
+              <tr>
+                <th>Plat</th>
+                <th>Quantité</th>
+                <th>Prix unitaire</th>
+                <th>Total ligne</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ligne in commande.lignes.all %}
+              <tr>
+                <td>{{ ligne.plat.nom }}</td>
+                <td>{{ ligne.quantite }}</td>
+                <td>{{ ligne.prix_unitaire }} F CFA</td>
+                <td>{{ ligne.total_ligne }} F CFA</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="text-end mt-3">
+            <strong>Total commande : {{ commande.total_paiement }} F CFA</strong>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-white">Aucune commande enregistrée.</p>
+    {% endfor %}
+  </div>
 </section>
+
+
 
 
 {% endblock %}

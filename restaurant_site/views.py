@@ -8,6 +8,8 @@ from django.db import transaction
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Plat, Reservation, LigneDeCommande, Commande, Utilisateur
 from .forms import LoginForm, RegisterForm, AjoutPersonnelForm
+from django.core.mail import send_mail
+
 
 
 def role_required(role):
@@ -308,9 +310,35 @@ def traitement_commande(request):
 # VUES D'ADMINISTRATION
 # =============================================================
 
+@login_required
+def faire_reservation(request):
+    if request.method == 'POST':
+        # Traiter les données du formulaire de réservation
+        date_res = request.POST.get('date_reservation')
+        heure_res = request.POST.get('heure_reservation')
+        nb_personnes = request.POST.get('nombre_personnes')
+        
+        # Créer l'objet Reservation
+        reservation = Reservation.objects.create(
+            client=request.user,
+            date_reservation=date_res,
+            heure_reservation=heure_res,
+            nombre_personnes=nb_personnes
+        )
+        
+        # Rediriger vers la page de confirmation ou vers le menu
+        return redirect('menu') 
+    
+    # Rendre le formulaire de réservation
+    return render(request, 'client/reservation.html')
 
-def client(request):
-    return render(request, )
+
+def role_required(role):
+    def decorator(view_func):
+        return user_passes_test(lambda u: u.is_authenticated and u.role == role)(view_func)
+    return decorator
+
+
 
 @role_required('Serveur')
 def serveur_dashboard(request):
@@ -324,7 +352,7 @@ def cuisinier_dashboard(request):
 def caissier_dashboard(request):
     return render(request, 'caissier.html')
 
-<<<<<<< Updated upstream
+
 # def logout_view(request):
 #     auth_logout(request)
 #     messages.success(request, "Déconnexion réussie.")
@@ -342,8 +370,13 @@ def test_email(request):
 
 
 
+# def commandes_view(request):
+#     commandes = Commande.objects.prefetch_related('lignes__plat', 'client').all()
+#     return render(request, 'cuisinier/commandes.html', {'commandes': commandes})
+
 def commandes_view(request):
     return render(request, 'cuisinier/commandes.html')
 
 def notifications_view(request):
     return render(request, 'cuisinier/notifications.html')
+

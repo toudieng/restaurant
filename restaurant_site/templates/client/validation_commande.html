@@ -3,102 +3,109 @@
 {% block title %}Validation de commande{% endblock %}
 
 {% block content %}
-<main class="container mt-5 pt-5">
-    <h2>Informations de commande et de paiement</h2>
+<main class="container mt-5">
+    <h2 class="text-center mb-4">Informations de commande et de paiement</h2>
 
-    <div class="row">
-        <div class="col-md-6">
-            <h4>Récapitulatif de votre commande</h4>
-            {% if panier %}
-            <ul class="list-group">
-                {% for plat_id, item in panier.items %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ item.nom }} x {{ item.quantite }}
-                    <span class="badge bg-primary rounded-pill">{{ item.total }} F CFA</span>
-                </li>
-                {% endfor %}
-            </ul>
-            <h4 class="mt-3 text-end">Total à payer : {{ total }} F CFA</h4>
-            {% else %}
-            <div class="alert alert-warning">Votre panier est vide.</div>
-            {% endif %}
+    <form action="{% url 'traitement_commande' %}" method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3">Récapitulatif de votre commande</h4>
+                        {% if panier %}
+                        <ul class="list-group list-group-flush">
+                            {% for plat_id, item in panier.items %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>{{ item.nom }} x {{ item.quantite }}</div>
+                                <span class="fw-bold">{{ item.total }} F CFA</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <h4 class="mt-3 text-end">Total à payer : {{ total }} F CFA</h4>
+                        {% else %}
+                        <div class="alert alert-warning">Votre panier est vide.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3">Détails de paiement et de livraison</h4>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Mode de commande</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="mode_commande" id="service_en_salle" value="salle" checked>
+                                <label class="form-check-label" for="service_en_salle">
+                                    Service en salle
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="mode_commande" id="livraison_a_domicile" value="livraison">
+                                <label class="form-check-label" for="livraison_a_domicile">
+                                    Livraison à domicile
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="section_salle" class="mb-3">
+                            <label for="reservation_id" class="form-label">Sélectionner une réservation</label>
+                            <select class="form-select" id="reservation_id" name="reservation_id">
+                                <option value="none">Vous n'avez pas de réservation active.</option>
+                                {% for reservation in reservations %}
+                                <option value="{{ reservation.id }}">Réservation du {{ reservation.date_reservation }} à {{ reservation.heure_reservation }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div id="section_livraison" class="mb-3" style="display: none;">
+                            <label class="form-label">Adresse de livraison</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="choix_adresse" id="saisie_manuelle" value="manuelle" checked>
+                                <label class="form-check-label" for="saisie_manuelle">Saisie manuelle</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="choix_adresse" id="choisir_sur_carte" value="carte">
+                                <label class="form-check-label" for="choisir_sur_carte">Choisir sur la carte</label>
+                            </div>
+                            <div id="adresse_manuelle_input" class="mt-3">
+                                <input type="text" class="form-control" name="adresse_livraison" placeholder="Entrez votre adresse">
+                            </div>
+                            <div id="map_container" class="mt-3" style="display: none;">
+                                <div id="mapid" style="width: 100%; height: 300px;"></div>
+                                <input type="text" id="adresse_textuelle" class="form-control mt-2" readonly placeholder="Adresse détectée automatiquement">
+                                <input type="hidden" id="coordonnees_livraison" name="coordonnees_livraison">
+                            </div>
+                            <label for="telephone" class="form-label mt-3">Numéro de téléphone</label>
+                            <input type="tel" class="form-control" id="telephone" name="telephone" required>
+                            <div class="invalid-feedback">Veuillez entrer votre numéro de téléphone.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="methode_paiement" class="form-label">Méthode de paiement</label>
+                            <select class="form-select" id="methode_paiement" name="methode_paiement" required>
+                                <option value="">Sélectionner une méthode</option>
+                                </select>
+                            <div class="invalid-feedback">Veuillez sélectionner une méthode de paiement.</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Procéder au paiement</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="col-md-6">
-            <h4>Détails de paiement et de livraison</h4>
-            <form action="{% url 'traitement_commande' %}" method="post">
-                {% csrf_token %}
-                
-                <div class="mb-3">
-                    <label class="form-label">Mode de commande</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="mode_commande" id="service_en_salle" value="salle" checked>
-                        <label class="form-check-label" for="service_en_salle">
-                            Service en salle
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="mode_commande" id="livraison_a_domicile" value="livraison">
-                        <label class="form-check-label" for="livraison_a_domicile">
-                            Livraison à domicile
-                        </label>
-                    </div>
-                </div>
-                
-                <div id="section_salle" class="mb-3">
-                    <label for="reservation_id" class="form-label">Sélectionner une réservation</label>
-                    <select class="form-select" id="reservation_id" name="reservation_id">
-                        <option value="none">Vous n'avez pas de réservation active.</option>
-                        {% for reservation in reservations %}
-                            <option value="{{ reservation.id }}">Réservation du {{ reservation.date_reservation }} à {{ reservation.heure_reservation }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div id="section_livraison" class="mb-3" style="display: none;">
-                    <label class="form-label">Adresse de livraison</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="choix_adresse" id="saisie_manuelle" value="manuelle" checked>
-                        <label class="form-check-label" for="saisie_manuelle">
-                            Saisie manuelle
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="choix_adresse" id="choisir_sur_carte" value="carte">
-                        <label class="form-check-label" for="choisir_sur_carte">
-                            Choisir sur la carte
-                        </label>
-                    </div>
-                    <div id="adresse_manuelle_input" class="mt-3">
-                        <input type="text" class="form-control" name="adresse_livraison" placeholder="Entrez votre adresse">
-                    </div>
-                    <div id="map_container" class="mt-3" style="display: none;">
-                        <div id="mapid" style="width: 100%; height: 300px;"></div>
-                        <input type="text" id="adresse_textuelle" class="form-control mt-2" readonly placeholder="Adresse détectée automatiquement">
-                        <input type="hidden" id="coordonnees_livraison" name="coordonnees_livraison">
-                    </div>
-                    <label for="telephone" class="form-label mt-3">Numéro de téléphone</label>
-                    <input type="tel" class="form-control" id="telephone" name="telephone">
-                </div>
-                
-                <div class="mb-3">
-                    <label for="methode_paiement" class="form-label">Méthode de paiement</label>
-                    <select class="form-select" id="methode_paiement" name="methode_paiement" required>
-                        <option value="">Sélectionner une méthode</option>
-                    </select>
-                </div>
-
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary btn-lg">Procéder au paiement</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    </form>
 </main>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    // ... votre code JavaScript existant pour la gestion des radios et de la carte ...
     document.addEventListener('DOMContentLoaded', function() {
         const modeCommandeRadios = document.querySelectorAll('input[name="mode_commande"]');
         const sectionLivraison = document.getElementById('section_livraison');
@@ -181,8 +188,6 @@
             }
         }
 
-
-
         function toggleModeCommande() {
             if (document.getElementById('livraison_a_domicile').checked) {
                 sectionLivraison.style.display = 'block';
@@ -199,11 +204,10 @@
             if (document.getElementById('choisir_sur_carte').checked) {
                 adresseManuelleInput.style.display = 'none';
                 mapContainer.style.display = 'block';
-                // Assurer que le conteneur est visible avant d'initialiser ou de redimensionner
                 setTimeout(() => {
                     initializeMap();
                     setTimeout(() => {
-                        map.invalidateSize(); // Redimensionner la carte après affichage
+                        map.invalidateSize();
                     }, 100);
                 }, 100);
             } else {
@@ -215,7 +219,6 @@
         modeCommandeRadios.forEach(radio => radio.addEventListener('change', toggleModeCommande));
         choixAdresseRadios.forEach(radio => radio.addEventListener('change', toggleChoixAdresse));
 
-        // Appel initial des fonctions pour s'assurer que le bon état est affiché au chargement de la page
         toggleModeCommande(); 
         toggleChoixAdresse();
     });

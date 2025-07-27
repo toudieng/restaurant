@@ -11,6 +11,11 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
+        body {
+            /* Garantit que le contenu n'est pas caché par la navbar fixe */
+            padding-top: 70px; 
+        }
+
         .alert-danger {
             animation: shake 0.4s ease-in-out;
         }
@@ -31,37 +36,38 @@
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">L'occidental</a>
+            <a class="navbar-brand" href="{% url 'accueil' %}">L'occidental</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Accueil</a>
+                        <a class="nav-link" href="{% url 'accueil' %}">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Menu</a>
+                        <a class="nav-link" href="{% url 'menu' %}">Menu</a>
+                    </li>
+                    {% with request.session.panier.items|length as nb_items %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'panier' %}">
+                                Panier {% if nb_items > 0 %}<span class="badge bg-secondary">{{ nb_items }}</span>{% endif %}
+                            </a>
+                        </li>
+                    {% endwith %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'faire_reservation' %}">Réservations</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Panier</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Réservations</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Témoignages</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Localisation</a>
+                        <a class="nav-link" href="{% url 'mes_commandes' %}">Mes commandes</a>
                     </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Déconnexion</a>
+                            <a class="nav-link" href="{% url 'logout' %}">Déconnexion</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Connexion</a>
+                            <a class="nav-link" href="{% url 'connexion' %}">Connexion</a>
                         </li>
                     {% endif %}
                 </ul>
@@ -82,5 +88,7 @@
         integrity="sha256-2e+GdrwV/Xp6+3Wb46g5e4j3a5F4b6g5F6e4J5k3Z6b5pQ4"
         crossorigin=""></script>
     {% block extra_js %}{% endblock %}
+    
+
 </body>
 </html>

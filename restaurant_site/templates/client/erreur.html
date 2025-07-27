@@ -1,0 +1,10 @@
+{% extends 'client/base.html' %}
+{% block title %}Erreur{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <h2 class="text-danger">Erreur de paiement</h2>
+    <p>{{ message }}</p>
+    <a href="{% url 'menu' %}" class="btn btn-primary mt-3">Retour au menu</a>
+</div>
+{% endblock %}

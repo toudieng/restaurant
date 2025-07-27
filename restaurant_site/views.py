@@ -258,6 +258,9 @@ def role_required(role):
 def client_dashboard(request):
     return render(request, 'client/client.html')
 
+def client(request):
+    return render(request, )
+
 @role_required('Serveur')
 def serveur_dashboard(request):
     return render(request, 'serveur.html')

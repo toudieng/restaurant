@@ -1,0 +1,101 @@
+{% extends 'authentification/connexion.html' %}
+
+{% block title %}
+  <title>Statut des Commandes</title>
+{% endblock %}
+
+{% block style %}
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  table th, table td {
+    border: 1px solid #dee2e6;
+    vertical-align: middle;
+  }
+  .btn-sm {
+    margin: 2px;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<section class="container py-5 mt-5">
+  <h2 class="text-center mb-4">Statut des Plats Commandés</h2>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-hover">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">ID Commande</th>
+          <th scope="col">Client</th>
+          <th scope="col">Adresse de Livraison</th>
+          <th scope="col">Date Commande</th>
+          <th scope="col">Statut</th>
+          <th scope="col">Total Paiement</th>
+          <th scope="col">Détails des Plats</th>
+          <th scope="col">Image</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for commande in commandes %}
+        <tr>
+          <td>{{ commande.id }}</td>
+          <td>{{ commande.client.username }}</td>
+          <td>{{ commande.adresse_livraison }}</td>
+          <td>{{ commande.date_commande|date:"d M Y H:i" }}</td>
+          <td>
+            <span class="badge 
+              {% if commande.statut == 'en_attente' %}badge-warning
+              {% elif commande.statut == 'en_cours' %}badge-info
+              {% elif commande.statut == 'prete' %}badge-success
+              {% elif commande.statut == 'livree' %}badge-primary
+              {% elif commande.statut == 'annulee' %}badge-danger
+              {% endif %}">
+              {{ commande.get_statut_display }}
+            </span>
+            <form method="post" action="{% url 'changer_statut_commande' commande.id %}">
+              {% csrf_token %}
+              <div class="btn-group mt-2">
+                <button type="submit" name="statut" value="en_attente" class="btn btn-warning btn-sm">En attente</button>
+                <button type="submit" name="statut" value="en_cours" class="btn btn-info btn-sm">En cours</button>
+                <button type="submit" name="statut" value="prete" class="btn btn-success btn-sm">Prête</button>
+                <button type="submit" name="statut" value="livree" class="btn btn-primary btn-sm">Livrée</button>
+                <button type="submit" name="statut" value="annulee" class="btn btn-danger btn-sm">Annulée</button>
+              </div>
+            </form>
+          </td>
+          <td>{{ commande.total_paiement }} FCFA</td>
+          <td>
+            <ul class="list-unstyled">
+              {% for ligne in commande.lignes.all %}
+                <li>{{ ligne.quantite }} x {{ ligne.plat.nom }} ({{ ligne.prix_unitaire }} FCFA/unité)</li>
+              {% empty %}
+                <li>Aucun plat</li>
+              {% endfor %}
+            </ul>
+          </td>
+          <td>
+            <ul class="list-unstyled">
+              {% for ligne in commande.lignes.all %}
+                {% if ligne.plat.image %}
+                  <li>
+                    <img src="{{ ligne.plat.image.url }}" alt="{{ ligne.plat.nom }}" style="width: 80px; height: auto;" class="img-thumbnail">
+                  </li>
+                {% else %}
+                  <li><em>Pas d'image</em></li>
+                {% endif %}
+              {% empty %}
+                <li><em>Pas de plat</em></li>
+              {% endfor %}
+            </ul>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center">Aucune commande enregistrée pour le moment.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

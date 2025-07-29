@@ -35,6 +35,8 @@ class LigneDeCommandeInline(admin.TabularInline):
     extra = 0 # Ne pas afficher de lignes vides par défaut
     readonly_fields = ['prix_unitaire', 'total_ligne']
 
+admin.site.register(LigneDeCommande)
+
 
 @admin.register(Commande)
 class CommandeAdmin(admin.ModelAdmin):

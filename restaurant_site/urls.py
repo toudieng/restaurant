@@ -7,22 +7,16 @@ urlpatterns = [
     path('', views.accueil_view, name='accueil'),
     path('connexion/', views.auth_view, name='connexion'),
     path('register/', views.auth_view, name='register'),
-<<<<<<< HEAD
 
-    path('menu', views.menu, name='menu'),
-=======
     path('logout/', views.logout_view, name='logout'),
     path('menu/', views.menu, name='menu'),
     path('client/', views.client, name='client'),
->>>>>>> af5bf8c31b061b2d1768b7912af24019ac1a1787
+
     path('serveur/', views.serveur_dashboard, name='serveur'),
     path('cuisinier/', views.cuisinier_dashboard, name='cuisinier'),
     path('caissier/', views.caissier_dashboard, name='caissier'),
 
     path('commandes/', views.commandes_view, name='commandes'),
-
-    path('notifications/', views.notifications_view, name='notifications'),
-
 
     path('renitialiser_password/', auth_views.PasswordResetView.as_view(
         template_name='authentification/renitialiser_password.html'), name='password_reset'),
@@ -49,5 +43,6 @@ urlpatterns = [
     path('mes-commandes/', views.mes_commandes, name='mes_commandes'),
     path('commande/<int:commande_id>/', views.detail_commande, name='detail_commande'),
 
-
+    path('changer-statut/<int:commande_id>/', views.changer_statut_commande, name='changer_statut_commande'),
 ]
+

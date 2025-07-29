@@ -107,14 +107,20 @@ class Commande(models.Model):
     def __str__(self):
         return f"Commande #{self.pk} par {self.client.username}"
     
+    # def calculer_total(self):
+    #     """
+    #     Calcule le total de la commande en sommant le prix de chaque ligne.
+    #     """
+    #     total = sum(item.total_ligne for item in self.lignes.all())
+    #     self.total_paiement = total
+    #     self.save()
+    #     return total
+
     def calculer_total(self):
-        """
-        Calcule le total de la commande en sommant le prix de chaque ligne.
-        """
-        total = sum(item.total_ligne for item in self.lignes.all())
+        total = sum([ligne.prix_unitaire * ligne.quantite for ligne in self.lignes.all()])
         self.total_paiement = total
         self.save()
-        return total
+
 
 
 # Nouveau modèle pour les lignes de commande
@@ -133,8 +139,17 @@ class LigneDeCommande(models.Model):
         return f"{self.quantite} x {self.plat.nom}"
     
     # Méthode pour calculer le total de la ligne
+    # def save(self, *args, **kwargs):
+    #     self.total_ligne = self.prix_unitaire * self.quantite
+    #     super().save(*args, **kwargs)
+
     def save(self, *args, **kwargs):
-        self.total_ligne = self.prix_unitaire * self.quantite
+        if self.plat and self.prix_unitaire is None:
+            self.prix_unitaire = self.plat.prix
+
+        if self.prix_unitaire is not None and self.quantite is not None:
+            self.total_ligne = self.prix_unitaire * self.quantite
+
         super().save(*args, **kwargs)
 
 class Reservation(models.Model):

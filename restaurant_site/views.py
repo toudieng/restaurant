@@ -9,11 +9,15 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Plat, Reservation, LigneDeCommande, Commande, Utilisateur
 from .forms import LoginForm, RegisterForm, AjoutPersonnelForm
 from django.core.mail import send_mail
-
-
+from django.views.decorators.http import require_POST
 from restaurant_app.paydunya_sdk.checkout import CheckoutInvoice, PaydunyaSetup
 from .paydunya_config import PaydunyaSetup
 from django.shortcuts import render, redirect
+
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+
+import logging 
 
 
 def role_required(role):
@@ -67,7 +71,7 @@ def auth_view(request):
                 elif role == 'Serveur':
                     return redirect('serveur')
                 elif role == 'Cuisinier':
-                    return redirect('cuisinier')
+                    return redirect('commandes')
                 elif role == 'Caissier':
                     return redirect('caissier')
                 else:
@@ -90,7 +94,7 @@ def auth_view(request):
                 elif role == 'Serveur':
                     return redirect('serveur')
                 elif role == 'Cuisinier':
-                    return redirect('cuisinier')
+                    return redirect('commandes')
                 elif role == 'Caissier':
                     return redirect('caissier')
                 else:
@@ -407,7 +411,6 @@ def traitement_commande(request):
 # VUES D'ADMINISTRATION
 # =============================================================
 
-<<<<<<< HEAD
 @login_required
 def faire_reservation(request):
     if request.method == 'POST':
@@ -437,25 +440,19 @@ def role_required(role):
     return decorator
 
 
-
-=======
->>>>>>> af5bf8c31b061b2d1768b7912af24019ac1a1787
 @role_required('Serveur')
 def serveur_dashboard(request):
     return render(request, 'serveur.html')
 
 @role_required('Cuisinier')
 def cuisinier_dashboard(request):
-    return render(request, 'cuisinier/cuisinier.html')
+    return render(request, 'cuisinier.html')
 
 @role_required('Caissier')
 def caissier_dashboard(request):
     return render(request, 'caissier.html')
 
-<<<<<<< HEAD
 
-=======
->>>>>>> af5bf8c31b061b2d1768b7912af24019ac1a1787
 # def logout_view(request):
 #     auth_logout(request)
 #     messages.success(request, "Déconnexion réussie.")
@@ -473,13 +470,37 @@ def test_email(request):
 
 
 
+
 # def commandes_view(request):
-#     commandes = Commande.objects.prefetch_related('lignes__plat', 'client').all()
-#     return render(request, 'cuisinier/commandes.html', {'commandes': commandes})
+#     print("✅ Vue cuisinier appelée")
+#     # Récupérer toutes les commandes avec leurs lignes associées
+#     commandes = Commande.objects.prefetch_related('lignes__plat').select_related('client')
+
+
+#     return render(request, 'cuisinier.html', {
+#         'commandes': commandes
+#     })
 
 def commandes_view(request):
-    return render(request, 'cuisinier/commandes.html')
+    commandes = Commande.objects.all().prefetch_related('lignes')  # Optimisation
 
-def notifications_view(request):
-    return render(request, 'cuisinier/notifications.html')
+    for commande in commandes:
+        commande.calculer_total()  # ✅ Met à jour le total automatiquement
 
+    return render(request, 'cuisinier.html', {'commandes': commandes})
+
+
+@login_required
+def changer_statut_commande(request, commande_id):
+    if request.method == 'POST':
+        commande = get_object_or_404(Commande, id=commande_id)
+        nouveau_statut = request.POST.get('statut')
+        if nouveau_statut in ['en_attente', 'en_cours', 'prete', 'livree', 'annulee']:
+            commande.statut = nouveau_statut
+            commande.save()
+    return redirect('commandes')
+
+
+@receiver([post_save, post_delete], sender=LigneDeCommande)
+def mettre_a_jour_total_commande(sender, instance, **kwargs):
+    instance.commande.calculer_total()

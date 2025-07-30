@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Facture Commande #{{ commande.id }}</title>
+    <style type="text/css">
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            margin: 10mm; /* Réduit les marges globales pour gagner de l'espace */
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        /* Style général des tableaux */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5mm; /* Moins d'espace après les tableaux */
+            page-break-inside: auto; /* Permet les sauts de page à l'intérieur de la table */
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 5px; /* Réduit le padding des cellules de tableau d'articles */
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        thead {
+            display: table-header-group; /* Répète l'en-tête du tableau sur chaque nouvelle page */
+        }
+        tr {
+            page-break-inside: avoid; /* Essaye d'éviter de couper les lignes */
+        }
+        .text-right {
+            text-align: right;
+        }
+        /* Header et Footer (position fixes) */
+        .header, .footer {
+            width: 100%;
+            text-align: center;
+            position: fixed;
+        }
+        .header {
+            top: 0;
+            border-bottom: 1px solid #eee;
+            padding: 5mm 0; /* Padding vertical, pas de padding horizontal forcé */
+            /* Ajoutez min-height si le contenu du header est très petit et vous voulez un minimum d'espace */
+            /* min-height: 20mm; */
+        }
+        .footer {
+            bottom: 0;
+            border-top: 1px solid #eee;
+            padding: 5mm 0; /* Padding vertical, pas de padding horizontal forcé */
+            /* Ajoutez min-height si le contenu du footer est très petit */
+            /* min-height: 15mm; */
+        }
+        /* Contenu principal de la page, avec des marges pour éviter le chevauchement avec header/footer */
+        .content-area {
+            /* Ces marges doivent être au moins égales aux hauteurs de votre header/footer
+               plus leurs paddings et bordures. Ajustez si nécessaire. */
+            margin-top: 25mm; /* Un peu moins que 40mm pour rapprocher le contenu du haut */
+            margin-bottom: 15mm; /* Espace suffisant pour le footer */
+        }
+        /* Nouveau style pour la table des informations de commande (pour la compacter) */
+        .info-commande {
+            border: none; /* Pas de bordures pour cette table */
+            margin-bottom: 10mm; /* Moins d'espace après les infos de commande */
+        }
+        .info-commande td {
+            border: none; /* Pas de bordures pour les cellules d'info */
+            padding: 1px 0; /* Très peu de padding pour les cellules d'info */
+            vertical-align: top; /* Aligne le contenu en haut des cellules */
+        }
+        /* Style pour le total de la commande */
+        .total {
+            font-size: 14pt;
+            font-weight: bold;
+            page-break-before: avoid; /* Essaye d'éviter un saut de page juste avant le total */
+            margin-top: 5mm; /* Un peu d'espace avant le total, mais pas trop */
+        }
+        /* Ajustement pour les titres pour réduire les marges par défaut */
+        h2, h3 {
+            margin-top: 5mm;
+            margin-bottom: 3mm;
+        }
+        p {
+            margin-top: 2px; /* Réduire l'espace entre les paragraphes */
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>L'occidental</h1>
+        <p>Facture de Commande</p>
+    </div>
+
+    <div class="content-area">
+        <h2>Facture #{{ commande.id }}</h2>
+        
+        <table class="info-commande">
+            <tr>
+                <td style="width: 50%;"><strong>Date de Commande :</strong> {{ commande.date_commande|date:"d M Y H:i" }}</td>
+                <td style="width: 50%;"><strong>Client :</strong> {{ commande.client.username }}</td>
+            </tr>
+            <tr>
+                <td><strong>Mode de Commande :</strong> {{ commande.get_mode_commande_display }}</td>
+                <td><strong>Statut du Paiement :</strong> {{ commande.get_statut_display }}</td>
+            </tr>
+            {% if commande.mode_commande == 'livraison' %}
+                <tr>
+                    <td colspan="2"><strong>Adresse de Livraison :</strong> {{ adresse_livraison_display }}</td>
+                </tr>
+                <tr>
+                    <td colspan="2"><strong>Téléphone :</strong> {{ commande.telephone }}</td>
+                </tr>
+            {% endif %}
+            <tr>
+                <td><strong>Moyen de Paiement :</strong> {{ commande.get_moyen_paiement_display }}</td>
+                {% if commande.transaction_id %}
+                    <td><strong>ID de Transaction :</strong> {{ commande.transaction_id }}</td>
+                {% else %}
+                    <td></td> {# Cellule vide pour maintenir l'alignement si transaction_id n'existe pas #}
+                {% endif %}
+            </tr>
+        </table>
+        
+        <h3>Détails des Articles :</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Plat</th>
+                    <th class="text-right">Quantité</th>
+                    <th class="text-right">Prix Unitaire</th>
+                    <th class="text-right">Total Ligne</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ligne in commande.lignes.all %} {# Assurez-vous que 'lignes' est le related_name de LigneDeCommande #}
+                <tr>
+                    <td>{{ ligne.plat.nom }}</td>
+                    <td class="text-right">{{ ligne.quantite }}</td>
+                    <td class="text-right">{{ ligne.prix_unitaire }} F CFA</td>
+                    <td class="text-right">{{ ligne.total_ligne }} F CFA</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="text-right total">
+            Total de la commande : {{ commande.total_paiement }} F CFA
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Merci pour votre commande !</p>
+        <p>L'occidental &copy; 2024</p>
+    </div>
+</body>
+</html>

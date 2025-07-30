@@ -1,33 +1,46 @@
 {% extends 'client/base.html' %}
-{% block title %}Mes commandes{% endblock %}
+
+{% block title %}Mes Commandes{% endblock %}
 
 {% block content %}
-<div class="container mt-5 pt-5">
-    <h2>Mes Commandes</h2>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Historique de vos commandes</h2>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
     {% if commandes %}
-        <table class="table table-bordered table-hover mt-4">
-            <thead class="table-light">
-                <tr>
-                    <th>Date</th>
-                    <th>Montant</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for commande in commandes %}
-                <tr>
-                    <td>{{ commande.date|date:"d/m/Y H:i" }}</td>
-                    <td>{{ commande.montant_total }} F CFA</td>
-                    <td>{{ commande.statut|capfirst }}</td>
-                    <td><a href="{% url 'detail_commande' commande.id %}" class="btn btn-sm btn-outline-primary">Voir détails</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="list-group">
+            {% for commande in commandes %}
+            <a href="{% url 'detail_commande' commande.id %}" class="list-group-item list-group-item-action mb-3">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">Commande #{{ commande.id }}</h5>
+                    <small class="text-muted">{{ commande.date_commande|date:"d M Y H:i" }}</small>
+                </div>
+                <p class="mb-1">Statut : <strong>{{ commande.get_statut_display }}</strong></p>
+                <p class="mb-1">Total : <strong>{{ commande.total_paiement }} F CFA</strong></p>
+                
+                {% if commande.mode_commande == 'livraison' %}
+                    <small>Livraison à : {{ commande.adresse_livraison }}</small>
+                {% else %}
+                    <small>Mode : {{ commande.get_mode_commande_display }}</small>
+                {% endif %}
+
+                <div class="d-flex justify-content-end mt-2">
+                    <button class="btn btn-sm btn-outline-primary">Voir les détails</button>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
     {% else %}
-        <p>Aucune commande enregistrée.</p>
+        <div class="alert alert-info text-center" role="alert">
+            Vous n'avez pas encore passé de commandes.
+        </div>
     {% endif %}
 </div>
 {% endblock %}

@@ -11,11 +11,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        body {
-            /* Garantit que le contenu n'est pas caché par la navbar fixe */
-            padding-top: 70px; 
-        }
-
         .alert-danger {
             animation: shake 0.4s ease-in-out;
         }
@@ -43,7 +38,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accueil' %}">Accueil</a>
+                        <a class="nav-link" href="{% url 'client' %}">Accueil</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'menu' %}">Menu</a>

@@ -1,0 +1,47 @@
+{# votre_app/templates/emails/confirmation_reservation_client.html #}
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; }
+        .header { background-color: #4CAF50; color: white; padding: 10px; text-align: center; border-radius: 5px 5px 0 0; }
+        .details p { margin: 5px 0; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 5px; }
+        .footer { margin-top: 20px; font-size: 0.9em; color: #777; text-align: center; border-top: 1px solid #eee; padding-top: 10px; }
+        a { color: #4CAF50; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🎉 Votre réservation à L'Occidental est confirmée ! 🎉</h2>
+        </div>
+        <p>Bonjour {{ reservation.client.get_full_name|default:reservation.client.username }},</p>
+        <p>Nous avons le plaisir de vous confirmer votre réservation :</p>
+
+        <div class="details">
+            <ul>
+                <li><strong>Numéro de Réservation :</strong> {{ reservation.id }}</li>
+                <li><strong>Date :</strong> {{ reservation.date_reservation|date:"l d F Y" }}</li>
+                <li><strong>Heure :</strong> {{ reservation.heure_reservation|time:"H:i" }}</li>
+                <li><strong>Nombre de personnes :</strong> {{ reservation.nombre_personnes }}</li>
+            </ul>
+        </div>
+
+        <p>Nous sommes impatients de vous accueillir et de vous faire passer un agréable moment.</p>
+        <p>Si vous avez des questions ou si vous souhaitez modifier votre réservation, veuillez nous contacter rapidement.</p>
+        <br>
+        <p>À très bientôt !</p>
+        <p>Cordialement,</p>
+        <p>L'équipe L'Occidental</p>
+
+        <div class="footer">
+            <p>&copy; 2024 L'Occidental. Tous droits réservés.</p>
+            <p><a href="http://localhost:8000">Visitez notre site web</a></p>
+        </div>
+    </div>
+</body>
+</html>

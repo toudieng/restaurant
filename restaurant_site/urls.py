@@ -11,10 +11,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('menu/', views.menu, name='menu'),
     path('client/', views.client, name='client'),
-
-    path('serveur/', views.serveur_dashboard, name='serveur'),
     path('cuisinier/', views.cuisinier_dashboard, name='cuisinier'),
-    path('caissier/', views.caissier_dashboard, name='caissier'),
 
     path('commandes/', views.commandes_view, name='commandes'),
 
@@ -40,9 +37,20 @@ urlpatterns = [
     path('reservation/', views.faire_reservation, name='faire_reservation'),
     path('commande/paiement/', views.payer_commande, name='payer_commande'),
     path('commande/success/', views.paiement_success, name='paiement_success'),
+    path('commande/paiement/cancel/', views.paiement_cancel, name='paiement_cancel'),
     path('mes-commandes/', views.mes_commandes, name='mes_commandes'),
     path('commande/<int:commande_id>/', views.detail_commande, name='detail_commande'),
 
-    path('changer-statut/<int:commande_id>/', views.changer_statut_commande, name='changer_statut_commande'),
+    path('caissier/commandes/', views.commandes_a_valider, name='commandes_a_valider'),
+    path('caissier/valider/<int:commande_id>/', views.valider_paiement, name='valider_paiement'),
+
+    path('serveur/dashboard/', views.serveur_dashboard, name='serveur'), # Nouvelle URL
+    path('serveur/marquer_servie/<int:commande_id>/', views.marquer_servie, name='marquer_servie'),
+
+    path('livreur/dashboard/', views.livreur_dashboard, name='livreur'), # Nouvelle URL
+    path('livreur/marquer_livree/<int:commande_id>/', views.marquer_livree, name='marquer_livree'),
+
+    path('commande/<int:commande_id>/facture/pdf/', views.generer_facture_pdf, name='generer_facture_pdf'),
+
 ]
 

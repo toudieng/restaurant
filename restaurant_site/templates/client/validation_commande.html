@@ -59,6 +59,9 @@
                                 <option value="{{ reservation.id }}">Réservation du {{ reservation.date_reservation }} à {{ reservation.heure_reservation }}</option>
                                 {% endfor %}
                             </select>
+                            {% if not reservations %}
+                                <small class="form-text text-muted">Vous n'avez pas de réservations confirmées actives pour le service en salle.</small>
+                            {% endif %}
                         </div>
 
                         <div id="section_livraison" class="mb-3" style="display: none;">
@@ -80,7 +83,7 @@
                                 <input type="hidden" id="coordonnees_livraison" name="coordonnees_livraison">
                             </div>
                             <label for="telephone" class="form-label mt-3">Numéro de téléphone</label>
-                            <input type="tel" class="form-control" id="telephone" name="telephone" required>
+                            <input type="tel" class="form-control" id="telephone" name="telephone" required value="{{ user_phone }}">
                             <div class="invalid-feedback">Veuillez entrer votre numéro de téléphone.</div>
                         </div>
 

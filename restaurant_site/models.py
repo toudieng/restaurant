@@ -7,6 +7,7 @@ class Utilisateur(AbstractUser):
     SERVEUR = 'Serveur'
     CUISINIER = 'Cuisinier'
     CAISSIER = 'Caissier'
+    LIVREUR = 'Livreur'
 
     ROLE_CHOICES = [
         (ADMINISTRATEUR, 'Administrateur'),
@@ -14,6 +15,7 @@ class Utilisateur(AbstractUser):
         (SERVEUR, 'Serveur'),
         (CUISINIER, 'Cuisinier'),
         (CAISSIER, 'Caissier'),
+        (LIVREUR, 'Livreur'),
     ]
 
     class Meta:
@@ -23,6 +25,7 @@ class Utilisateur(AbstractUser):
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=CLIENT)
     telephone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return f"{self.username} - {self.role}"
@@ -79,12 +82,20 @@ class Commande(models.Model):
         ('salle', 'Service en salle'),
         ('livraison', 'Livraison'),
     )
+    MOYENS_PAIEMENT = (
+        ('espece', 'Espèce'),
+        ('paydunya', 'PayDunya'),
+    )
     
     # L'identifiant de l'utilisateur qui a passé la commande
     client = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, related_name='commandes')
     
     # Le nouveau champ de lien vers la réservation
     reservation = models.ForeignKey('Reservation', on_delete=models.SET_NULL, null=True, blank=True, related_name='commandes')
+
+    moyen_paiement = models.CharField(
+        max_length=20, choices=MOYENS_PAIEMENT, default='espece'
+    )
     
     # Informations sur la commande
     date_commande = models.DateTimeField(auto_now_add=True)
@@ -96,6 +107,7 @@ class Commande(models.Model):
     # Nouveaux champs pour la gestion des options
     mode_commande = models.CharField(max_length=20, choices=MODE_COMMANDE, default='salle')
     adresse_livraison = models.CharField(max_length=255, blank=True, null=True)
+    telephone = models.CharField(max_length=20, blank=True, null=True)
     
     # ... (Vos méthodes ou champs supplémentaires)
 
@@ -121,6 +133,9 @@ class Commande(models.Model):
         self.total_paiement = total
         self.save()
 
+
+    def paiement_par_espece(self):
+        return self.moyen_paiement == 'espece'
 
 
 # Nouveau modèle pour les lignes de commande

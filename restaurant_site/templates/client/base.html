@@ -28,8 +28,6 @@
             100% { transform: translateX(0); }
         }
         </style>
-
-
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -77,12 +75,6 @@
 
     {% block content %}{% endblock %}
 
-    <!-- <footer class="bg-light text-center text-lg-start mt-auto">
-        <div class="text-center p-3">
-            © 2024 L'occidental - Tous droits réservés.
-        </div>
-    </footer> -->
-
     <footer id="footer">
         {% include 'base_footer.html' %}
     </footer>
@@ -92,7 +84,5 @@
         integrity="sha256-2e+GdrwV/Xp6+3Wb46g5e4j3a5F4b6g5F6e4J5k3Z6b5pQ4"
         crossorigin=""></script>
     {% block extra_js %}{% endblock %}
-    
-
 </body>
 </html>

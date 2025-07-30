@@ -1,3 +1,65 @@
+# from django import forms
+# from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm
+# from .models import Utilisateur
+
+# class LoginForm(AuthenticationForm):
+#     username = forms.CharField(
+#         label="Nom d'utilisateur",
+#         widget=forms.TextInput(attrs={'class': 'form-control'})
+#     )
+#     password = forms.CharField(
+#         label="Mot de passe",
+#         widget=forms.PasswordInput(attrs={'class': 'form-control'})
+#     )
+
+# class RegisterForm(UserCreationForm):
+#     email = forms.EmailField(
+#         label="Adresse email",
+#         widget=forms.EmailInput(attrs={'class': 'form-control'})
+#     )
+
+#     role = forms.ChoiceField(
+#         choices=Utilisateur.ROLE_CHOICES,
+#         widget=forms.Select(attrs={'class': 'form-control'})
+#     )
+
+#     class Meta(UserCreationForm.Meta):
+#         model = Utilisateur
+#         fields = UserCreationForm.Meta.fields + ('email','role')  # Ajout de 'email'
+#         widgets = {
+#             'username': forms.TextInput(attrs={'class': 'form-control'}),
+#             'password1': forms.PasswordInput(attrs={'class': 'form-control'}),
+#             'password2': forms.PasswordInput(attrs={'class': 'form-control'}),
+#         }
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.fields['role'].initial = Utilisateur.CLIENT
+#         self.fields['role'].disabled=True
+
+
+# class CustomPasswordResetForm(PasswordResetForm):
+#     email = forms.EmailField(
+#         widget=forms.EmailInput(attrs={'class': 'form-control'})
+#     )
+
+# # Un formulaire de création du personnel, dans administarteur
+# class AjoutPersonnelForm(UserCreationForm):
+#     class Meta:
+#         model = Utilisateur
+#         fields = ['username', 'role', 'password1', 'password2']
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # Limiter les rôles uniquement au personnel (pas Client ni Admin ici)
+#         self.fields['role'].choices = [
+#             ('Serveur', 'Serveur'),
+#             ('Cuisinier', 'Cuisinier'),
+#             ('Caissier', 'Caissier')
+#         ]
+
+
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm
 from .models import Utilisateur
@@ -18,32 +80,27 @@ class RegisterForm(UserCreationForm):
         widget=forms.EmailInput(attrs={'class': 'form-control'})
     )
 
-    role = forms.ChoiceField(
-        choices=Utilisateur.ROLE_CHOICES,
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
-
     class Meta(UserCreationForm.Meta):
         model = Utilisateur
-        fields = UserCreationForm.Meta.fields + ('email', 'role')  # Ajout de 'email'
+        fields = UserCreationForm.Meta.fields + ('email',)  # Supprime 'role'
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'password1': forms.PasswordInput(attrs={'class': 'form-control'}),
             'password2': forms.PasswordInput(attrs={'class': 'form-control'}),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['role'].initial = Utilisateur.CLIENT
-        self.fields['role'].disabled=True
-
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.role = Utilisateur.CLIENT  # rôle imposé automatiquement
+        if commit:
+            user.save()
+        return user
 
 class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={'class': 'form-control'})
     )
 
-# Un formulaire de création du personnel, dans administarteur
 class AjoutPersonnelForm(UserCreationForm):
     class Meta:
         model = Utilisateur
@@ -51,9 +108,12 @@ class AjoutPersonnelForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Limiter les rôles uniquement au personnel (pas Client ni Admin ici)
         self.fields['role'].choices = [
             ('Serveur', 'Serveur'),
             ('Cuisinier', 'Cuisinier'),
             ('Caissier', 'Caissier')
         ]
+        self.fields['username'].widget.attrs.update({'class': 'form-control'})
+        self.fields['role'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password1'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-control'})

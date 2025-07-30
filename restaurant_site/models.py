@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
+from django.contrib.auth.models import User
 
 class Utilisateur(AbstractUser):
     ADMINISTRATEUR = 'Administrateur'
@@ -62,10 +64,6 @@ class Plat(models.Model):
         status = "(Épuisé)" if self.est_epuise else ""
         return f"{self.nom} {self.prix} {self.description} {self.image} {self.allergenes} {self.est_epuise} {self.specialite_du_jour}"    
 
-
-from django.db import models
-from django.contrib.auth.models import User # Assurez-vous d'importer le bon modèle utilisateur
-# from .models import Réservation # Assurez-vous d'importer le modèle de réservation si vous l'avez dans le même fichier
 
 class Commande(models.Model):
     STATUT_COMMANDE = (

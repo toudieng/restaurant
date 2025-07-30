@@ -17,7 +17,12 @@ from django.shortcuts import render, redirect
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
-import logging 
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Sum, Count
+from .models import Commande, LigneDeCommande, Plat
+
+from decimal import Decimal
 
 
 def role_required(role):
@@ -470,7 +475,6 @@ def test_email(request):
 
 
 
-
 # def commandes_view(request):
 #     print("✅ Vue cuisinier appelée")
 #     # Récupérer toutes les commandes avec leurs lignes associées
@@ -481,14 +485,12 @@ def test_email(request):
 #         'commandes': commandes
 #     })
 
+@login_required
 def commandes_view(request):
-    commandes = Commande.objects.all().prefetch_related('lignes')  # Optimisation
-
+    commandes = Commande.objects.filter(statut__in=['en_attente', 'en_cours']).prefetch_related('lignes', 'lignes__plat', 'client')
     for commande in commandes:
-        commande.calculer_total()  # ✅ Met à jour le total automatiquement
-
+        commande.calculer_total()
     return render(request, 'cuisinier.html', {'commandes': commandes})
-
 
 @login_required
 def changer_statut_commande(request, commande_id):
@@ -504,3 +506,43 @@ def changer_statut_commande(request, commande_id):
 @receiver([post_save, post_delete], sender=LigneDeCommande)
 def mettre_a_jour_total_commande(sender, instance, **kwargs):
     instance.commande.calculer_total()
+
+
+
+def statistique(request):
+    now = timezone.now()
+
+    # ✅ Simulation temporaire des commandes
+    Commande.objects.all().delete()  # Supprime toutes les commandes existantes (pour test)
+    Commande.objects.create(date_commande=now, total_paiement=Decimal('125.50'))
+    Commande.objects.create(date_commande=now - timedelta(days=1), total_paiement=Decimal('80.00'))
+    Commande.objects.create(date_commande=now - timedelta(days=6), total_paiement=Decimal('60.00'))
+    Commande.objects.create(date_commande=now - timedelta(days=30), total_paiement=Decimal('150.00'))
+
+    # ✅ Chiffre d'affaires
+    chiffre_jour = Commande.objects.filter(date_commande__date=now.date()).aggregate(Sum('total_paiement'))['total_paiement__sum'] or 0
+    chiffre_semaine = Commande.objects.filter(date_commande__gte=now - timedelta(days=7)).aggregate(Sum('total_paiement'))['total_paiement__sum'] or 0
+    chiffre_mois = Commande.objects.filter(date_commande__month=now.month).aggregate(Sum('total_paiement'))['total_paiement__sum'] or 0
+
+    # ✅ Plats populaires simulés (si tu n’as pas encore de données LigneDeCommande)
+    plats_populaires = (
+        Plat.objects.annotate(nombre_commandes=Count('lignedecommande'))
+        .order_by('-nombre_commandes')[:5]
+    )
+
+    # ✅ Simulation des tables
+    total_tables = 40
+    tables_occupees = 10
+    taux_occupation = (tables_occupees / total_tables) * 100
+
+    context = {
+        "chiffre_jour": chiffre_jour,
+        "chiffre_semaine": chiffre_semaine,
+        "chiffre_mois": chiffre_mois,
+        "plats_populaires": plats_populaires,
+        "taux_occupation": round(taux_occupation, 1),
+        "tables_occupees": tables_occupees,
+        "total_tables": total_tables,
+    }
+
+    return render(request, "accueil.html", context)

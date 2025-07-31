@@ -153,6 +153,7 @@ class Reservation(models.Model):
     nombre_personnes = models.PositiveIntegerField()
     est_confirmee = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    table = models.ForeignKey('Table', on_delete=models.SET_NULL, null=True, blank=True, related_name='reservations')
     
     class Meta:
         ordering = ['date_reservation', 'heure_reservation']
@@ -161,3 +162,17 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"Réservation pour {self.client.username} le {self.date_reservation} à {self.heure_reservation}"
+
+class Table(models.Model):
+    numero = models.IntegerField(unique=True)
+    capacite = models.IntegerField()
+    est_disponible = models.BooleanField(default=True, verbose_name="Disponible")
+
+    class Meta:
+        db_table = 'Table'
+        verbose_name = 'Table'
+        verbose_name_plural = 'Tables'
+        ordering = ['numero']
+
+    def __str__(self):
+        return f"Table {self.numero} (Capacité: {self.capacite})"

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Categorie, Plat
+from .models import Categorie, Plat, Table
 from .models import Utilisateur, Commande, LigneDeCommande, Reservation
 from django.contrib.auth.admin import UserAdmin
 
@@ -15,14 +15,14 @@ class PlatAdmin(admin.ModelAdmin):
     list_filter = ('categorie', 'est_epuise', 'specialite_du_jour')
     search_fields = ('nom', 'description','allergenes')
     list_editable = ('est_epuise', 'specialite_du_jour')
-    
-    fieldsets = ( # Organise les champs dans le formulaire d'édition
+
+    fieldsets = (
         (None, {
             'fields': ('nom', 'description', 'prix', 'image', 'categorie')
         }),
         ('Informations supplémentaires', {
             'fields': ('allergenes', 'est_epuise', 'specialite_du_jour'),
-            'classes': ('collapse',), # Rend cette section pliable
+            'classes': ('collapse',),
         }),
     )
 
@@ -62,7 +62,14 @@ class CommandeAdmin(admin.ModelAdmin):
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'client', 'client_id', 'date_reservation', 'heure_reservation', 'nombre_personnes', 'est_confirmee', 'created_at')
-    list_filter = ('est_confirmee',)
-    search_fields = ('client__username', 'date_reservation')
+    list_display = ('id', 'client', 'client_id', 'date_reservation', 'heure_reservation', 'nombre_personnes', 'est_confirmee', 'created_at', 'table')
+    list_filter = ('est_confirmee', 'table')
+    search_fields = ('client__username', 'date_reservation', 'table__numero')
     list_editable = ('est_confirmee',)
+
+@admin.register(Table)
+class TableAdmin(admin.ModelAdmin):
+    list_display = ('numero', 'capacite', 'est_disponible')
+    list_filter = ('capacite', 'est_disponible',) 
+    search_fields = ('numero',)
+    list_editable = ('est_disponible', 'capacite',)

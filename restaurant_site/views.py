@@ -7,7 +7,7 @@ from django.db import transaction
 
 
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Plat, Reservation, LigneDeCommande, Commande, Utilisateur
+from .models import Plat, Reservation, LigneDeCommande, Commande, Utilisateur, Table
 from .forms import LoginForm, RegisterForm, AjoutPersonnelForm
 from datetime import datetime, date
 from django.core.mail import send_mail
@@ -188,49 +188,42 @@ def menu(request):
 
 
 def get_panier(request):
-    """Récupère le panier depuis la session."""
     return request.session.get('panier', {})
 
 def set_panier(request, panier_data):
-    """Enregistre le panier dans la session."""
     request.session['panier'] = panier_data
-    request.session.modified = True # Important pour que Django sache que la session a été modifiée
+    request.session.modified = True
 
 
-# --- Votre vue ajouter_au_panier modifiée ---
 def ajouter_au_panier(request, plat_id):
     plat = get_object_or_404(Plat, id=plat_id)
-    panier = get_panier(request) # Utilisez la fonction utilitaire
+    panier = get_panier(request)
+
+    if plat.est_epuise:
+        messages.error(request, f"Le plat '{plat.nom}' est actuellement épuisé et ne peut pas être ajouté au panier.")
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'message': f"Le plat '{plat.nom}' est épuisé."})
+        return redirect('menu')
 
     if str(plat.id) in panier:
         panier[str(plat.id)]['quantite'] += 1
     else:
         panier[str(plat.id)] = {
             'nom': plat.nom,
-            'prix': str(plat.prix), # Stocker le prix comme string pour éviter des problèmes de sérialisation Decimal
+            'prix': str(plat.prix),
             'quantite': 1,
-            # Vous pouvez ajouter l'URL de l'image ici si vous voulez l'afficher dans un mini-panier AJAX
             'image_url': plat.image.url if plat.image else None,
         }
     
-    # Recalculer le total de la ligne (utile si vous affichez un mini-panier)
     item = panier[str(plat.id)]
-    item['total'] = float(item['prix']) * item['quantite'] # Convertir en float pour le calcul
+    item['total'] = float(item['prix']) * item['quantite']
 
-    set_panier(request, panier) # Utilisez la fonction utilitaire pour sauvegarder
-
-    # messages.success(request, f"{plat.nom} a été ajouté au panier.") # Ce message ne sera pas visible directement en AJAX
-
-    # --- NOUVELLE PARTIE : Gérer la réponse AJAX ---
-    # Vérifie si la requête a été envoyée via AJAX (par le JavaScript que nous avons défini)
+    set_panier(request, panier)
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        # Calculer le nombre total d'articles dans le panier
         total_items_in_cart = sum(item['quantite'] for item in panier.values())
-        # Renvoie une réponse JSON avec le succès et le nouveau total
         return JsonResponse({'success': True, 'total_items': total_items_in_cart})
     
-    # --- Comportement par défaut si ce n'est PAS une requête AJAX (par exemple, JavaScript est désactivé) ---
-    return redirect('menu') # Redirige vers la page du menu
+    return redirect('menu')
 
 
 # def ajouter_au_panier(request, plat_id):
@@ -294,10 +287,12 @@ def supprimer_du_panier(request, plat_id):
 
 @login_required
 def faire_reservation(request):
+    tables_disponibles = Table.objects.all().order_by('numero')
     if request.method == 'POST':
         date_res_str = request.POST.get('date_reservation')
         heure_res_str = request.POST.get('heure_reservation')
         nb_personnes = request.POST.get('nombre_personnes')
+        num_table = request.POST.get('table')
 
         try:
             date_reservation = datetime.strptime(date_res_str, '%Y-%m-%d').date()
@@ -315,6 +310,16 @@ def faire_reservation(request):
                  messages.error(request, "Le nombre de personnes doit être supérieur à zéro.")
                  return redirect('faire_reservation')
 
+            if not num_table:
+                messages.error(request, "Veuillez sélectionner une table.")
+                return redirect('faire_reservation')
+
+            try:
+                table_selectionnee = Table.objects.get(numero=num_table)
+            except Table.DoesNotExist:
+                messages.error(request, "La table sélectionnée n'existe pas.")
+                return redirect('faire_reservation')
+
         except ValueError:
             messages.error(request, "Format de date ou d'heure invalide.")
             return redirect('faire_reservation')
@@ -323,10 +328,12 @@ def faire_reservation(request):
             client=request.user,
             date_reservation=date_reservation,
             heure_reservation=heure_reservation,
-            nombre_personnes=nb_personnes
+            nombre_personnes=nb_personnes,
+            table=table_selectionnee,
+            est_confirmee=False
         )
 
-        messages.success(request, "Votre réservation a été enregistrée. En attente de confirmation.")
+        messages.success(request, f"Votre réservation pour la table {table_selectionnee.numero} a été enregistrée. En attente de confirmation.")
         return redirect('menu')
 
     reservations_confirmees = Reservation.objects.filter(
@@ -338,6 +345,8 @@ def faire_reservation(request):
     context = {
         'min_date': date.today().isoformat(),
         'min_time': datetime.now().strftime('%H:%M'),
+        'tables': tables_disponibles,
+        'reservations_confirmees' : reservations_confirmees,
     }
     return render(request, 'client/reservation.html', context)
 
@@ -874,7 +883,7 @@ def changer_statut_commande(request, id):
         if nouveau_statut == 'prete':
             commande.statut = 'prete'
             commande.save()
-    return redirect('commandes')
+    return redirect('cuisinier_dashboard')
 
 
 @receiver([post_save, post_delete], sender=LigneDeCommande)

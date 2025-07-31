@@ -26,8 +26,8 @@
                 <h4>Un voyage de saveurs inoubliables</h4>
             </div>
         </div>
-
-        <div class="row mb-4 justify-content-center">
+        <div id="repasscroll">
+            <div class="row mb-4 justify-content-center">
             <div class="col-lg-8 col-md-10">
                 <form action="{% url 'menu' %}" method="GET" class="d-flex">
                     <input class="form-control me-2" type="search" placeholder="Rechercher un plat par nom ou description..." aria-label="Search" name="q" value="{{ search_query }}">
@@ -66,6 +66,8 @@
             {% endfor %}
 
         </div>
+        </div>
+        
     </section>
 
     <section id="evenements-speciaux" class="container-fluid py-5" style="background-color: #1C1E22; color: white;">

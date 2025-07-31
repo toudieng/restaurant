@@ -60,14 +60,12 @@ class AjoutPersonnelForm(UserCreationForm):
 class CategorieForm(forms.ModelForm):
     class Meta:
         model = Categorie
-        fields = ['nom'] # Seul le nom est modifiable
+        fields = ['nom']
 
 class PlatForm(forms.ModelForm):
     class Meta:
         model = Plat
-        # Tous les champs sont nécessaires pour l'ajout/modification d'un plat
         fields = ['nom', 'description', 'prix', 'image', 'allergenes', 'categorie', 'est_epuise', 'specialite_du_jour']
-        # Vous pouvez ajouter des widgets personnalisés si nécessaire, par exemple pour l'image ou le text area
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 4}), # Pour une meilleure apparence
+            'description': forms.Textarea(attrs={'rows': 4}),
         }

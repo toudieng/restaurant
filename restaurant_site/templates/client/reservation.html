@@ -23,6 +23,15 @@
                         <label for="nombre_personnes" class="form-label">Nombre de personnes</label>
                         <input type="number" class="form-control" id="nombre_personnes" name="nombre_personnes" min="1" required>
                     </div>
+                    <div class="mb-3">
+                        <label for="table" class="form-label">Sélectionner une table:</label>
+                        <select class="form-control" id="table" name="table" required>
+                            <option value="">-- Choisissez une table --</option>
+                            {% for table in tables %}
+                                <option value="{{ table.numero }}">Table {{ table.numero }} (Capacité: {{ table.capacite }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <button type="submit" class="btn btn-primary w-100">Soumettre la réservation</button>
                 </form>
             </div>

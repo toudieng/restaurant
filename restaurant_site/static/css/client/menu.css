@@ -26,9 +26,9 @@ header {
     z-index: 1;
 }  */
 
-#menu-culinaire{
+#repasscroll{
     border: 1px solid aliceblue;
-    max-height: 500px;
+    max-height: 800px;
     overflow: scroll;
     margin-bottom: 50px;
     scrollbar-width: 2px;

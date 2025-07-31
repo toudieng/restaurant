@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmer Réservation Multiples Tables</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Confirmer votre réservation</h1>
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <p>
+            Vous avez demandé une réservation pour le <strong>{{ date_reservation }}</strong> à <strong>{{ heure_reservation }}</strong> pour <strong>{{ nombre_personnes }}</strong> personnes.
+        </p>
+        <p>
+            La table initialement sélectionnée est trop petite. Nous vous proposons de réserver les tables suivantes :
+        </p>
+        <ul>
+            {% for table in tables_proposees %}
+                <li>Table {{ table.numero }} (Capacité: {{ table.capacite }})</li>
+            {% endfor %}
+        </ul>
+        <p>La capacité totale de ces tables est de <strong>{{ capacite_totale }}</strong> personnes.</p>
+
+        <p>Voulez-vous confirmer cette réservation avec les tables proposées ?</p>
+
+        <form method="post" action="{% url 'confirmer_reservation_multiple_tables' %}">
+            {% csrf_token %}
+            <button type="submit" name="confirmation" value="oui" class="btn btn-success">Oui, confirmer</button>
+            <button type="submit" name="confirmation" value="non" class="btn btn-danger">Non, annuler</button>
+        </form>
+
+        <a href="{% url 'faire_reservation' %}" class="btn btn-secondary mt-3">Retour à la page de réservation</a>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

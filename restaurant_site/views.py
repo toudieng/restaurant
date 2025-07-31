@@ -186,21 +186,68 @@ def menu(request):
     }
     return render(request, 'client/menu.html', context)
 
+
+def get_panier(request):
+    """Récupère le panier depuis la session."""
+    return request.session.get('panier', {})
+
+def set_panier(request, panier_data):
+    """Enregistre le panier dans la session."""
+    request.session['panier'] = panier_data
+    request.session.modified = True # Important pour que Django sache que la session a été modifiée
+
+
+# --- Votre vue ajouter_au_panier modifiée ---
 def ajouter_au_panier(request, plat_id):
     plat = get_object_or_404(Plat, id=plat_id)
-    panier = request.session.get('panier', {})
-    
+    panier = get_panier(request) # Utilisez la fonction utilitaire
+
     if str(plat.id) in panier:
         panier[str(plat.id)]['quantite'] += 1
     else:
         panier[str(plat.id)] = {
             'nom': plat.nom,
-            'prix': str(plat.prix),
-            'quantite': 1
+            'prix': str(plat.prix), # Stocker le prix comme string pour éviter des problèmes de sérialisation Decimal
+            'quantite': 1,
+            # Vous pouvez ajouter l'URL de l'image ici si vous voulez l'afficher dans un mini-panier AJAX
+            'image_url': plat.image.url if plat.image else None,
         }
     
-    request.session['panier'] = panier
-    return redirect('menu')
+    # Recalculer le total de la ligne (utile si vous affichez un mini-panier)
+    item = panier[str(plat.id)]
+    item['total'] = float(item['prix']) * item['quantite'] # Convertir en float pour le calcul
+
+    set_panier(request, panier) # Utilisez la fonction utilitaire pour sauvegarder
+
+    # messages.success(request, f"{plat.nom} a été ajouté au panier.") # Ce message ne sera pas visible directement en AJAX
+
+    # --- NOUVELLE PARTIE : Gérer la réponse AJAX ---
+    # Vérifie si la requête a été envoyée via AJAX (par le JavaScript que nous avons défini)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Calculer le nombre total d'articles dans le panier
+        total_items_in_cart = sum(item['quantite'] for item in panier.values())
+        # Renvoie une réponse JSON avec le succès et le nouveau total
+        return JsonResponse({'success': True, 'total_items': total_items_in_cart})
+    
+    # --- Comportement par défaut si ce n'est PAS une requête AJAX (par exemple, JavaScript est désactivé) ---
+    return redirect('menu') # Redirige vers la page du menu
+
+
+# def ajouter_au_panier(request, plat_id):
+#     plat = get_object_or_404(Plat, id=plat_id)
+#     panier = request.session.get('panier', {})
+    
+#     if str(plat.id) in panier:
+#         panier[str(plat.id)]['quantite'] += 1
+#     else:
+#         panier[str(plat.id)] = {
+#             'nom': plat.nom,
+#             'prix': str(plat.prix),
+#             'quantite': 1
+#         }
+    
+#     request.session['panier'] = panier
+#     return redirect('menu') FOCNTIONNE
 
 def voir_panier(request):
     panier = request.session.get('panier', {})

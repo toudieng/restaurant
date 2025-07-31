@@ -39,7 +39,7 @@ from django.utils import timezone
 
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from .models import Categorie, Plat, Reservation # Importez Reservation pour la gestion des résas
+from .models import Categorie, Plat, Reservation
 from .forms import CategorieForm, PlatForm
 
 
@@ -895,11 +895,9 @@ def mettre_a_jour_total_commande(sender, instance, **kwargs):
 
 
 
-# Fonction pour vérifier si l'utilisateur est un administrateur
 def is_admin(user):
     return user.is_authenticated and user.role == 'Administrateur'
 
-# --- Vues pour la gestion des Catégories ---
 
 @user_passes_test(is_admin)
 def categorie_list(request):
@@ -937,7 +935,6 @@ def categorie_delete(request, pk):
         return redirect('admin_categorie_list')
     return render(request, 'admin_panel/categories/confirm_delete.html', {'categorie': categorie})
 
-# --- Vues pour la gestion des Plats ---
 
 @user_passes_test(is_admin)
 def plat_list(request):
@@ -947,7 +944,6 @@ def plat_list(request):
 @user_passes_test(is_admin)
 def plat_create(request):
     if request.method == 'POST':
-        # N'oubliez pas request.FILES pour les images
         form = PlatForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
@@ -960,7 +956,7 @@ def plat_create(request):
 def plat_update(request, pk):
     plat = get_object_or_404(Plat, pk=pk)
     if request.method == 'POST':
-        form = PlatForm(request.POST, request.FILES, instance=plat) # N'oubliez pas request.FILES
+        form = PlatForm(request.POST, request.FILES, instance=plat)
         if form.is_valid():
             form.save()
             return redirect('admin_plat_list')
@@ -978,7 +974,6 @@ def plat_delete(request, pk):
 
 @user_passes_test(is_admin)
 def plat_toggle_status(request, pk):
-    # Action rapide pour marquer "épuisé" ou "spécialité du jour"
     if request.method == 'POST':
         plat = get_object_or_404(Plat, pk=pk)
         if 'toggle_epuise' in request.POST:
@@ -988,11 +983,9 @@ def plat_toggle_status(request, pk):
         plat.save()
     return redirect('admin_plat_list')
 
-# --- Vues pour la gestion des Réservations (extension de l'existant) ---
-
 @user_passes_test(is_admin)
 def reservation_list(request):
-    reservations = Reservation.objects.all().order_by('-created_at') # Les plus récentes en premier
+    reservations = Reservation.objects.all().order_by('-created_at')
     return render(request, 'admin_panel/reservations/list.html', {'reservations': reservations})
 
 @user_passes_test(is_admin)
@@ -1001,4 +994,4 @@ def reservation_toggle_confirmation(request, pk):
         reservation = get_object_or_404(Reservation, pk=pk)
         reservation.est_confirmee = not reservation.est_confirmee
         reservation.save()
-    return redirect('admin_reservation_list') # Redirige vers la liste des réservations
+    return redirect('admin_reservation_list')

@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from django.conf.urls.static import static
 
 urlpatterns = [
     # URLs d'authentification
@@ -56,9 +57,26 @@ urlpatterns = [
 
     path('commande/<int:commande_id>/facture/pdf/', views.generer_facture_pdf, name='generer_facture_pdf'),
 
-    path('admin-dashboard/reservations/', views.liste_reservations_admin, name='liste_reservations_admin'),
-    path('admin-dashboard/reservations/confirmer/<int:reservation_id>/', views.confirmer_reservation_par_admin, name='confirmer_reservation_par_admin'),
-    path('admin/reservations/annuler/<int:reservation_id>/', views.annuler_reservation_par_admin, name='annuler_reservation_par_admin'),
+    # path('admin-dashboard/reservations/', views.liste_reservations_admin, name='liste_reservations_admin'),
+    # path('admin-dashboard/reservations/confirmer/<int:reservation_id>/', views.confirmer_reservation_par_admin, name='confirmer_reservation_par_admin'),
+    # path('admin/reservations/annuler/<int:reservation_id>/', views.annuler_reservation_par_admin, name='annuler_reservation_par_admin'),
+
+    path('admin_panel/', views.categorie_list, name='admin_dashboard'),
+    path('admin_panel/categories/', views.categorie_list, name='admin_categorie_list'),
+    path('admin_panel/categories/add/', views.categorie_create, name='admin_categorie_create'),
+    path('admin_panel/categories/edit/<int:pk>/', views.categorie_update, name='admin_categorie_update'),
+    path('admin_panel/categories/delete/<int:pk>/', views.categorie_delete, name='admin_categorie_delete'),
+
+    # URLs pour les Plats
+    path('admin_panel/plats/', views.plat_list, name='admin_plat_list'),
+    path('admin_panel/plats/add/', views.plat_create, name='admin_plat_create'),
+    path('admin_panel/plats/edit/<int:pk>/', views.plat_update, name='admin_plat_update'),
+    path('admin_panel/plats/delete/<int:pk>/', views.plat_delete, name='admin_plat_delete'),
+    path('admin_panel/plats/toggle-status/<int:pk>/', views.plat_toggle_status, name='admin_plat_toggle_status'),
+
+    # URLs pour les Réservations (extension)
+    path('admin_panel/reservations/', views.reservation_list, name='admin_reservation_list'),
+    path('admin_panel/reservations/toggle-confirmation/<int:pk>/', views.reservation_toggle_confirmation, name='admin_reservation_toggle_confirmation'),
 
 ]
 

@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm
 from .models import Utilisateur
+from .models import Categorie, Plat
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(
@@ -55,3 +56,18 @@ class AjoutPersonnelForm(UserCreationForm):
             ('Cuisinier', 'Cuisinier'),
             ('Caissier', 'Caissier')
         ]
+
+class CategorieForm(forms.ModelForm):
+    class Meta:
+        model = Categorie
+        fields = ['nom'] # Seul le nom est modifiable
+
+class PlatForm(forms.ModelForm):
+    class Meta:
+        model = Plat
+        # Tous les champs sont nécessaires pour l'ajout/modification d'un plat
+        fields = ['nom', 'description', 'prix', 'image', 'allergenes', 'categorie', 'est_epuise', 'specialite_du_jour']
+        # Vous pouvez ajouter des widgets personnalisés si nécessaire, par exemple pour l'image ou le text area
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}), # Pour une meilleure apparence
+        }

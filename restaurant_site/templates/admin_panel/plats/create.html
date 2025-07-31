@@ -1,0 +1,31 @@
+{# admin_panel/categories/create.html et admin_panel/categories/update.html #}
+{# admin_panel/plats/create.html et admin_panel/plats/update.html #}
+
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}
+    {% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %}
+    {% if plat %}Plat{% else %}Catégorie{% endif %}
+{% endblock %}
+
+{% block content %}
+    <h2>{% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %} {% if plat %}Plat{% else %}Catégorie{% endif %}</h2>
+
+    <form method="post" enctype="multipart/form-data"> {# Ne pas oublier enctype pour les images #}
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}
+                    <small style="color: gray;">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                    <p style="color: red;">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn">Enregistrer</button>
+        <a href="{% if plat %}{% url 'admin_plat_list' %}{% else %}{% url 'admin_categorie_list' %}{% endif %}" class="btn btn-secondary">Annuler</a>
+    </form>
+{% endblock %}

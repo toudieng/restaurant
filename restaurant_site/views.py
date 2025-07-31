@@ -36,6 +36,13 @@ from django.db.models import Q
 from django.utils import timezone
 
 
+
+from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from .models import Categorie, Plat, Reservation # Importez Reservation pour la gestion des résas
+from .forms import CategorieForm, PlatForm
+
+
 def role_required(role):
     def decorator(view_func):
         def _wrapped_view(request, *args, **kwargs):
@@ -98,7 +105,7 @@ def auth_view(request):
 
                 role = user.role
                 if role == 'Administrateur':
-                    return redirect('liste_reservations_admin')
+                    return redirect('admin_dashboard')
                 elif role == 'Client':
                     return redirect('client')
                 elif role == 'Serveur':
@@ -122,8 +129,10 @@ def auth_view(request):
                 messages.success(request, "Inscription réussie. Vous êtes maintenant connecté.")
 
                 role = user.role
+                # if role == 'Administrateur':
+                #     return redirect('liste_reservations_admin')
                 if role == 'Administrateur':
-                    return redirect('liste_reservations_admin')
+                    return redirect('admin_dashboard')
                 elif role == 'Client':
                     return redirect('client')
                 elif role == 'Serveur':
@@ -565,6 +574,7 @@ def traitement_commande(request):
 
 @role_required('Caissier')
 def commandes_a_valider(request):
+
     commandes_en_attente = Commande.objects.filter(statut='en_attente')
 
     if request.method == 'POST':
@@ -574,28 +584,28 @@ def commandes_a_valider(request):
                 commande = get_object_or_404(Commande, id=commande_id, statut='en_attente')
                 commande.statut = 'en_cours'
                 commande.save()
-                messages.success(request, f"La commande {commande.numero_commande} a été validée et est maintenant 'en cours'.")
+                messages.success(request, f"La commande {commande.commande_id} a été validée et est maintenant 'en cours'.")
             except Exception as e:
                 messages.error(request, f"Une erreur s'est produite lors de la validation : {e}")
-        # CHANGEMENT ICI : Utilisez le nom de l'URL correcte
-        return redirect('commandes_a_valider') # Ou le nom que vous donnerez à cette URL dans urls.py
+        return redirect('admin_valider_commandes') # Redirige pour éviter la soumission multiple du formulaire
 
     context = {
         'commandes_en_attente': commandes_en_attente
     }
+
     return render(request, 'caissier/commandes_a_valider.html', context)
 
 
 @role_required('Caissier')
 def valider_paiement(request, commande_id):
-    commande = get_object_or_04(Commande, id=commande_id, moyen_paiement='espece')
+    commande = get_object_or_404(Commande, id=commande_id, moyen_paiement='espece')
 
     if commande.statut == 'en_attente':
-        commande.statut = 'en_cours'
+        commande.statut = 'en_cours' 
         commande.save()
         messages.success(request, f"Le paiement de la commande #{commande.id} a été validé. La commande est maintenant 'En cours de préparation'.")
 
-        messages.info(request,
+        messages.info(request, 
                       f"Cliquez <a href=\"{reverse('generer_facture_pdf', args=[commande.id])}\" target=\"_blank\" class=\"alert-link\">ici</a> pour générer la facture PDF de la commande #{commande.id}.")
 
     elif commande.statut == 'en_cours':
@@ -603,7 +613,8 @@ def valider_paiement(request, commande_id):
     else:
         messages.warning(request, f"La commande #{commande.id} ne peut pas être validée car son statut est '{commande.get_statut_display()}'.")
 
-    return redirect('commandes_a_valider') 
+    return redirect('commandes_a_valider')
+
 
 def get_address_from_coords(latitude, longitude):
     geolocator = Nominatim(user_agent="L_Occidental_Restaurant_Facture_PDF")
@@ -822,3 +833,116 @@ def changer_statut_commande(request, id):
 @receiver([post_save, post_delete], sender=LigneDeCommande)
 def mettre_a_jour_total_commande(sender, instance, **kwargs):
     instance.commande.calculer_total()
+
+
+
+
+
+
+# Fonction pour vérifier si l'utilisateur est un administrateur
+def is_admin(user):
+    return user.is_authenticated and user.role == 'Administrateur'
+
+# --- Vues pour la gestion des Catégories ---
+
+@user_passes_test(is_admin)
+def categorie_list(request):
+    categories = Categorie.objects.all()
+    return render(request, 'admin_panel/categories/list.html', {'categories': categories})
+
+@user_passes_test(is_admin)
+def categorie_create(request):
+    if request.method == 'POST':
+        form = CategorieForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_categorie_list')
+    else:
+        form = CategorieForm()
+    return render(request, 'admin_panel/categories/create.html', {'form': form})
+
+@user_passes_test(is_admin)
+def categorie_update(request, pk):
+    categorie = get_object_or_404(Categorie, pk=pk)
+    if request.method == 'POST':
+        form = CategorieForm(request.POST, instance=categorie)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_categorie_list')
+    else:
+        form = CategorieForm(instance=categorie)
+    return render(request, 'admin_panel/categories/update.html', {'form': form, 'categorie': categorie})
+
+@user_passes_test(is_admin)
+def categorie_delete(request, pk):
+    categorie = get_object_or_404(Categorie, pk=pk)
+    if request.method == 'POST':
+        categorie.delete()
+        return redirect('admin_categorie_list')
+    return render(request, 'admin_panel/categories/confirm_delete.html', {'categorie': categorie})
+
+# --- Vues pour la gestion des Plats ---
+
+@user_passes_test(is_admin)
+def plat_list(request):
+    plats = Plat.objects.all()
+    return render(request, 'admin_panel/plats/list.html', {'plats': plats})
+
+@user_passes_test(is_admin)
+def plat_create(request):
+    if request.method == 'POST':
+        # N'oubliez pas request.FILES pour les images
+        form = PlatForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_plat_list')
+    else:
+        form = PlatForm()
+    return render(request, 'admin_panel/plats/create.html', {'form': form})
+
+@user_passes_test(is_admin)
+def plat_update(request, pk):
+    plat = get_object_or_404(Plat, pk=pk)
+    if request.method == 'POST':
+        form = PlatForm(request.POST, request.FILES, instance=plat) # N'oubliez pas request.FILES
+        if form.is_valid():
+            form.save()
+            return redirect('admin_plat_list')
+    else:
+        form = PlatForm(instance=plat)
+    return render(request, 'admin_panel/plats/update.html', {'form': form, 'plat': plat})
+
+@user_passes_test(is_admin)
+def plat_delete(request, pk):
+    plat = get_object_or_404(Plat, pk=pk)
+    if request.method == 'POST':
+        plat.delete()
+        return redirect('admin_plat_list')
+    return render(request, 'admin_panel/plats/confirm_delete.html', {'plat': plat})
+
+@user_passes_test(is_admin)
+def plat_toggle_status(request, pk):
+    # Action rapide pour marquer "épuisé" ou "spécialité du jour"
+    if request.method == 'POST':
+        plat = get_object_or_404(Plat, pk=pk)
+        if 'toggle_epuise' in request.POST:
+            plat.est_epuise = not plat.est_epuise
+        elif 'toggle_specialite' in request.POST:
+            plat.specialite_du_jour = not plat.specialite_du_jour
+        plat.save()
+    return redirect('admin_plat_list')
+
+# --- Vues pour la gestion des Réservations (extension de l'existant) ---
+
+@user_passes_test(is_admin)
+def reservation_list(request):
+    reservations = Reservation.objects.all().order_by('-created_at') # Les plus récentes en premier
+    return render(request, 'admin_panel/reservations/list.html', {'reservations': reservations})
+
+@user_passes_test(is_admin)
+def reservation_toggle_confirmation(request, pk):
+    if request.method == 'POST':
+        reservation = get_object_or_404(Reservation, pk=pk)
+        reservation.est_confirmee = not reservation.est_confirmee
+        reservation.save()
+    return redirect('admin_reservation_list') # Redirige vers la liste des réservations

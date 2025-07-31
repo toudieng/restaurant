@@ -15,6 +15,16 @@ class PlatAdmin(admin.ModelAdmin):
     list_filter = ('categorie', 'est_epuise', 'specialite_du_jour')
     search_fields = ('nom', 'description','allergenes')
     list_editable = ('est_epuise', 'specialite_du_jour')
+    
+    fieldsets = ( # Organise les champs dans le formulaire d'édition
+        (None, {
+            'fields': ('nom', 'description', 'prix', 'image', 'categorie')
+        }),
+        ('Informations supplémentaires', {
+            'fields': ('allergenes', 'est_epuise', 'specialite_du_jour'),
+            'classes': ('collapse',), # Rend cette section pliable
+        }),
+    )
 
 
 class UtilisateurAdmin(UserAdmin):

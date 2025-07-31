@@ -1,0 +1,46 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Liste des Réservations{% endblock %}
+
+{% block content %}
+    <h2>Liste des Réservations</h2>
+
+    {% if reservations %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Heure</th>
+                    <th>Personnes</th>
+                    <th>Confirmée</th>
+                    <th>Date de Création</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                <tr>
+                    <td>{{ reservation.client.username }}</td>
+                    <td>{{ reservation.date_reservation }}</td>
+                    <td>{{ reservation.heure_reservation }}</td>
+                    <td>{{ reservation.nombre_personnes }}</td>
+                    <td>
+                        <form method="post" action="{% url 'admin_reservation_toggle_confirmation' reservation.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn {% if reservation.est_confirmee %}btn-success{% else %}btn-warning{% endif %}">
+                                {% if reservation.est_confirmee %}Oui{% else %}Non{% endif %}
+                            </button>
+                        </form>
+                    </td>
+                    <td>{{ reservation.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune réservation en attente.</p>
+    {% endif %}
+{% endblock %}

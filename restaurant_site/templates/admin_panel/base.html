@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Restaurant - {% block title %}{% endblock %}</title>
+    <style>
+        /* Styles CSS de base pour votre interface */
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .navbar { background-color: #333; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar a { color: white; text-decoration: none; margin-left: 15px; }
+        .container { padding: 20px; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .table th { background-color: #f2f2f2; }
+        .btn { padding: 8px 12px; background-color: #007bff; color: white; border: none; cursor: pointer; text-decoration: none; border-radius: 4px; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-warning { background-color: #ffc107; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input[type="text"], .form-group input[type="number"], .form-group textarea, .form-group select {
+            width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;
+        }
+        .messages { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Panneau Admin Restaurant</h1>
+        <div>
+            <a href="{% url 'admin_categorie_list' %}">Catégories</a>
+            <a href="{% url 'admin_plat_list' %}">Plats</a>
+            <a href="{% url 'admin_reservation_list' %}">Réservations</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}">Déconnexion</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

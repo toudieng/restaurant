@@ -1,0 +1,32 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Liste des Catégories{% endblock %}
+
+{% block content %}
+    <h2>Liste des Catégories</h2>
+    <a href="{% url 'admin_categorie_create' %}" class="btn">Ajouter une Catégorie</a>
+
+    {% if categories %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for categorie in categories %}
+                <tr>
+                    <td>{{ categorie.nom }}</td>
+                    <td>
+                        <a href="{% url 'admin_categorie_update' categorie.pk %}" class="btn btn-warning">Modifier</a>
+                        <a href="{% url 'admin_categorie_delete' categorie.pk %}" class="btn btn-danger">Supprimer</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune catégorie n'a été trouvée.</p>
+    {% endif %}
+{% endblock %}

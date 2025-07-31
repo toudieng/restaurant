@@ -75,15 +75,11 @@
                             <td>{{ commande.date_commande|date:"d/m/Y H:i" }}</td>
                             <td>{{ commande.get_statut_display }}</td>
                             <td>
-                                <form method="post">
+                                <form method="post" action="{% url 'generer_facture_pdf' commande.id %}">
                                     {% csrf_token %}
                                     <input type="hidden" name="commande_id" value="{{ commande.id }}">
                                     <button type="submit">Valider la Commande</button>
                                 </form>
-                            </td>
-                            <td class="action-links">
-                                {# Le lien qui redirige vers la génération du PDF #}
-                                <a href="{% url 'generer_facture_pdf' commande.id %}" target="_blank">Télécharger Facture</a>
                             </td>
                         </tr>
                     {% endfor %}

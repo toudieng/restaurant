@@ -1,48 +1,12 @@
-<!-- {% extends 'client/base.html' %}
-{% block title %}Détail commande{% endblock %}
-
-{% block content %}
-<div class="container mt-5 pt-5">
-    <h2>Détail de la commande n°{{ commande.id }}</h2>
-    <p>Date : {{ commande.date|date:"d/m/Y H:i" }}</p>
-    <p>Statut : {{ commande.statut }}</p>
-    <p>Total : {{ commande.montant_total }} F CFA</p>
-
-    <table class="table table-striped mt-4">
-        <thead>
-            <tr>
-                <th>Plat</th>
-                <th>Quantité</th>
-                <th>Prix unitaire</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ligne in lignes %}
-            <tr>
-                <td>{{ ligne.plat.nom }}</td>
-                <td>{{ ligne.quantite }}</td>
-                <td>{{ ligne.prix_unitaire }} F CFA</td>
-                <td>{{ ligne.quantite|multiply:ligne.prix_unitaire }} F CFA</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{% url 'mes_commandes' %}" class="btn btn-secondary">← Retour à mes commandes</a>
-</div>
-{% endblock %} -->
-
-
-
 {% extends 'client/base.html' %}
-{% load your_app_filters %}
+{% load my_app_filters %}
 
 {% block title %}Détails de la Commande #{{ commande.id }}{% endblock %}
 
 {% block content %}
 <main class="container mt-5">
     <h2 class="mb-4">Détails de la Commande #{{ commande.id }}</h2>
+
     <div class="card mb-4">
         <div class="card-header">
             Informations Générales
@@ -50,43 +14,48 @@
         <div class="card-body">
             <p><strong>Client :</strong> {{ commande.client.username }}</p>
             <p><strong>Date de commande :</strong> {{ commande.date_commande|date:"d M Y H:i" }}</p>
-            <p><strong>Statut :</strong> <span class="badge 
-                {% if commande.statut == 'livree' %}bg-success
-                {% elif commande.statut == 'prete' %}bg-info
-                {% elif commande.statut == 'en_cours' %}bg-primary
-                {% elif commande.statut == 'en_attente' %}bg-warning
-                {% else %}bg-danger
-                {% endif %}">{{ commande.get_statut_display }}</span></p>
+            <p><strong>Statut :</strong> 
+                <span class="badge 
+                    {% if commande.statut == 'livree' %}bg-success
+                    {% elif commande.statut == 'prete' %}bg-info
+                    {% elif commande.statut == 'en_cours' %}bg-primary
+                    {% elif commande.statut == 'en_attente' %}bg-warning
+                    {% else %}bg-danger
+                    {% endif %}
+                ">{{ commande.get_statut_display }}</span>
+            </p>
             <p><strong>Total :</strong> {{ commande.total_paiement }} F CFA</p>
             <p><strong>Mode de commande :</strong> {{ commande.get_mode_commande_display }}</p>
             <p><strong>Moyen de paiement :</strong> {{ commande.get_moyen_paiement_display }}</p>
-            {% if commande.transaction_id %}<p><strong>ID de transaction :</strong> {{ commande.transaction_id }}</p>{% endif %}
+            {% if commande.transaction_id %}
+                <p><strong>ID de transaction :</strong> {{ commande.transaction_id }}</p>
+            {% endif %}
 
             {% if commande.mode_commande == 'livraison' %}
                 <hr>
                 <h5>Informations de Livraison</h5>
-                <p><strong>Adresse de livraison :</strong> {{ commande.adresse_livraison }}</p>
-                <p><strong>Téléphone :</strong> {{ commande.telephone }}</p>
-                {% if commande.adresse_livraison and ',' in commande.adresse_livraison %}
-                    {% with coords=commande.adresse_livraison|split:"," %}
-                        <div id="mini-map-{{ commande.id }}" style="height: 200px; width: 100%;"></div>
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const lat = parseFloat("{{ coords.0 }}");
-                                const lng = parseFloat("{{ coords.1 }}");
-                                if (!isNaN(lat) && !isNaN(lng)) {
-                                    const miniMap = L.map('mini-map-{{ commande.id }}').setView([lat, lng], 15);
-                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                        attribution: '© OpenStreetMap contributors'
-                                    }).addTo(miniMap);
-                                    L.marker([lat, lng]).addTo(miniMap);
-                                    // Fix for map not rendering correctly on hidden elements
-                                    setTimeout(function () { miniMap.invalidateSize(); }, 100);
-                                }
-                            });
-                        </script>
-                    {% endwith %}
-                {% endif %}
+                {% with commande.adresse_livraison|split:"," as coordonnees %}
+                    <p><strong>Adresse de livraison :</strong></p>
+                    <p>Latitude : {{ coordonnees.0 }}<br>
+                    Longitude : {{ coordonnees.1 }}</p>
+                    <p><strong>Téléphone :</strong> {{ commande.telephone }}</p>
+
+                    <div id="mini-map-{{ commande.id }}" style="height: 200px; width: 100%;"></div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const lat = parseFloat("{{ coordonnees.0 }}");
+                            const lng = parseFloat("{{ coordonnees.1 }}");
+                            if (!isNaN(lat) && !isNaN(lng)) {
+                                const miniMap = L.map('mini-map-{{ commande.id }}').setView([lat, lng], 15);
+                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                    attribution: '© OpenStreetMap contributors'
+                                }).addTo(miniMap);
+                                L.marker([lat, lng]).addTo(miniMap);
+                                setTimeout(function () { miniMap.invalidateSize(); }, 100);
+                            }
+                        });
+                    </script>
+                {% endwith %}
             {% elif commande.mode_commande == 'salle' and commande.reservation %}
                 <hr>
                 <h5>Informations de Réservation</h5>
@@ -102,16 +71,14 @@
             Articles Commandés
         </div>
         <div class="card-body">
-            <ul class="list-group list-group-flush">
-                {% for ligne in lignes %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ ligne.plat.nom }} x {{ ligne.quantite }}
-                        <span class="fw-bold">{{ ligne.total_ligne }} F CFA</span>
-                    </li>
-                {% endfor %}
+            <ul class="list-unstyled">
+            {% for ligne in lignes_details %}
+                <li>{{ ligne.quantite }} × {{ ligne.plat.nom }} = {{ ligne.sous_total|floatformat:0 }} FCFA</li>
+            {% endfor %}
             </ul>
         </div>
     </div>
+
     <a href="{% url 'mes_commandes' %}" class="btn btn-secondary mt-3">Retour à mes commandes</a>
 </main>
 {% endblock %}
@@ -119,7 +86,4 @@
 {% block extra_js %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<script>
-
-</script>
 {% endblock %}

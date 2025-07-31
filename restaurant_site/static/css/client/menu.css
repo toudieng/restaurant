@@ -4,13 +4,13 @@
     height: 100%;
 }
 .card-text {
-    flex-grow: 1; /* Pour que le paragraphe prenne l'espace disponible */
+    flex-grow: 1;
 }
 
 header {
     position: relative;
-    background-image: url("/media/images/connexion.jpg"); /* Vérifiez le chemin comme discuté précédemment */
-    background-size: cover; /* Changez à 'cover' si vous voulez que l'image couvre entièrement */
+    background-image: url("/static/images/connexion.jpg"); 
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     height: 60vh;
@@ -18,13 +18,13 @@ header {
     color: white;
 }
 
-
+/* 
 .overlay {
     background-color: rgba(0, 0, 0, 0.4);
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     z-index: 1;
-} 
+}  */
 
 #menu-culinaire{
     border: 1px solid aliceblue;

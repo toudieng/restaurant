@@ -5,7 +5,7 @@ PaydunyaSetup.configure(
     private_key = "test_private_TeTacavlljkmIC0JctB3VaPSu6A",
     public_key = "test_public_i0Y7EriVOOHnGl0nRXbfHFQsT1x",
     token = "sARPbruEGYpQWApJHFqi",
-    mode = "test",  # ou "live"
+    mode = "test",
     store_name = "L'occidental",
     store_tagline = "Restaurant moderne",
     store_phone = "221765879303",

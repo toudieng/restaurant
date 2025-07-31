@@ -1,38 +1,96 @@
 {% extends 'client/base.html' %}
 {% load static %}
 
-{% block title %}Caisse - L'occidental{% endblock %}
+{% block title %}Validation des Commandes{% endblock %}
+{% block extra_css %}
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .success { color: green; }
+        .error { color: red; }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message-list {
+            list-style: none;
+            padding: 0;
+        }
+        .message-list li {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .message-list .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-list .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+{% endblock %}
 
 {% block content %}
-<h2 class="my-4">Commandes à valider (Paiement en espèces)</h2> {# Ajout de marge avec Bootstrap #}
+    <div class="container">
+        <h1>Valider les Commandes en Attente</h1>
 
-<div class="table-responsive"> {# Rend le tableau défilable horizontalement sur les petits écrans #}
-    <table class="table table-striped table-hover table-bordered">
-        <thead>
-            <tr class="table-dark">
-                <th>ID Commande</th>
-                <th>Client</th>
-                <th>Date</th>
-                <th>Montant</th>
-                <th>Statut</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for commande in commandes %}
-            <tr>
-                <td>{{ commande.id }}</td>
-                <td>{{ commande.client.get_full_name }}</td>
-                <td>{{ commande.date_commande }}</td>
-                <td>{{ commande.total_paiement }} F CFA</td>
-                <td>{{ commande.get_statut_display }}</td>
-                <td>
-                    <a href="{% url 'valider_paiement' commande.id %}" class="btn btn-success btn-sm">Valider le paiement</a> {# btn-sm pour un bouton plus petit #}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div> {# Fin de table-responsive #}
+        {% if messages %}
+            <ul class="message-list">
+                {% for message in messages %}
+                    <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
+        {% if commandes_en_attente %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>N° Commande</th>
+                        <th>Client</th>
+                        <th>Date de Commande</th>
+                        <th>Statut Actuel</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes_en_attente %}
+                        <tr>
+                            <td>{{ commande.id }}</td>
+                            <td>{{ commande.client.username }}</td> 
+                            <td>{{ commande.date_commande|date:"d/m/Y H:i" }}</td>
+                            <td>{{ commande.get_statut_display }}</td>
+                            <td>
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="commande_id" value="{{ commande.id }}">
+                                    <button type="submit">Valider la Commande</button>
+                                </form>
+                            </td>
+                            <td class="action-links">
+                                {# Le lien qui redirige vers la génération du PDF #}
+                                <a href="{% url 'generer_facture_pdf' commande.id %}" target="_blank">Télécharger Facture</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Aucune commande en attente pour le moment.</p>
+        {% endif %}
+    </div>
 {% endblock %}

@@ -25,7 +25,7 @@ class RegisterForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         model = Utilisateur
-        fields = UserCreationForm.Meta.fields + ('email', 'role')  # Ajout de 'email'
+        fields = UserCreationForm.Meta.fields + ('email', 'role')
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'password1': forms.PasswordInput(attrs={'class': 'form-control'}),
@@ -43,7 +43,6 @@ class CustomPasswordResetForm(PasswordResetForm):
         widget=forms.EmailInput(attrs={'class': 'form-control'})
     )
 
-# Un formulaire de création du personnel, dans administarteur
 class AjoutPersonnelForm(UserCreationForm):
     class Meta:
         model = Utilisateur
@@ -51,7 +50,6 @@ class AjoutPersonnelForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Limiter les rôles uniquement au personnel (pas Client ni Admin ici)
         self.fields['role'].choices = [
             ('Serveur', 'Serveur'),
             ('Cuisinier', 'Cuisinier'),

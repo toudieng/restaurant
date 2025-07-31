@@ -56,7 +56,7 @@ class Plat(models.Model):
     specialite_du_jour = models.BooleanField(default=False)
 
     class Meta :
-        ordering = ['nom'] # Trie par nom par défaut
+        ordering = ['nom']
         db_table = 'Plats' 
         verbose_name = 'Plat'
         verbose_name_plural = 'Plats'
@@ -67,8 +67,7 @@ class Plat(models.Model):
 
 
 from django.db import models
-from django.contrib.auth.models import User # Assurez-vous d'importer le bon modèle utilisateur
-# from .models import Réservation # Assurez-vous d'importer le modèle de réservation si vous l'avez dans le même fichier
+from django.contrib.auth.models import User
 
 class Commande(models.Model):
     STATUT_COMMANDE = (
@@ -87,46 +86,31 @@ class Commande(models.Model):
         ('paydunya', 'PayDunya'),
     )
     
-    # L'identifiant de l'utilisateur qui a passé la commande
     client = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, related_name='commandes')
     
-    # Le nouveau champ de lien vers la réservation
     reservation = models.ForeignKey('Reservation', on_delete=models.SET_NULL, null=True, blank=True, related_name='commandes')
 
     moyen_paiement = models.CharField(
         max_length=20, choices=MOYENS_PAIEMENT, default='espece'
     )
     
-    # Informations sur la commande
     date_commande = models.DateTimeField(auto_now_add=True)
     statut = models.CharField(max_length=20, choices=STATUT_COMMANDE, default='en_attente')
     total_paiement = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     transaction_id = models.CharField(max_length=100, null=True, blank=True)
 
-    
-    # Nouveaux champs pour la gestion des options
     mode_commande = models.CharField(max_length=20, choices=MODE_COMMANDE, default='salle')
     adresse_livraison = models.CharField(max_length=255, blank=True, null=True)
     telephone = models.CharField(max_length=20, blank=True, null=True)
     
-    # ... (Vos méthodes ou champs supplémentaires)
 
     class Meta:
-        ordering = ['-date_commande'] # Trie par date de commande la plus récente
+        ordering = ['-date_commande']
         verbose_name = 'Commande'
         verbose_name_plural = 'Commandes'
 
     def __str__(self):
         return f"Commande #{self.pk} par {self.client.username}"
-    
-    # def calculer_total(self):
-    #     """
-    #     Calcule le total de la commande en sommant le prix de chaque ligne.
-    #     """
-    #     total = sum(item.total_ligne for item in self.lignes.all())
-    #     self.total_paiement = total
-    #     self.save()
-    #     return total
 
     def calculer_total(self):
         total = sum([ligne.prix_unitaire * ligne.quantite for ligne in self.lignes.all()])
@@ -138,7 +122,6 @@ class Commande(models.Model):
         return self.moyen_paiement == 'espece'
 
 
-# Nouveau modèle pour les lignes de commande
 class LigneDeCommande(models.Model):
     commande = models.ForeignKey(Commande, on_delete=models.CASCADE, related_name='lignes')
     plat = models.ForeignKey(Plat, on_delete=models.CASCADE)
@@ -152,11 +135,7 @@ class LigneDeCommande(models.Model):
 
     def __str__(self):
         return f"{self.quantite} x {self.plat.nom}"
-    
-    # Méthode pour calculer le total de la ligne
-    # def save(self, *args, **kwargs):
-    #     self.total_ligne = self.prix_unitaire * self.quantite
-    #     super().save(*args, **kwargs)
+
 
     def save(self, *args, **kwargs):
         if self.plat and self.prix_unitaire is None:

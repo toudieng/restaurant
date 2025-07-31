@@ -5,22 +5,35 @@ from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
 
+
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Plat, Reservation, LigneDeCommande, Commande, Utilisateur
 from .forms import LoginForm, RegisterForm, AjoutPersonnelForm
 from datetime import datetime, date
 from django.core.mail import send_mail
+from .utils import send_reservation_confirmation_email
 
 from restaurant_app.paydunya_sdk.checkout import CheckoutInvoice, PaydunyaSetup
 from .paydunya_config import PaydunyaSetup
 
 from django.template.loader import get_template
-from io import BytesIO
-from xhtml2pdf import pisa
 from datetime import datetime
+
+from xhtml2pdf import pisa
+from io import BytesIO 
+
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver 
 
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
+
+from django.db.models import Sum, Count
+from datetime import timedelta
+
+
+from django.db.models import Q
+from django.utils import timezone
 
 
 def role_required(role):
@@ -37,7 +50,33 @@ def role_required(role):
 # =============================================================
 
 def accueil_view(request):
-    return render(request, 'authentification/accueil.html')
+    maintenant = datetime.now()
+    aujourd_hui = date.today()
+    semaine = aujourd_hui - timedelta(days=7)
+    mois = aujourd_hui.replace(day=1)
+
+    chiffre_jour = Commande.objects.filter(date_commande__date=aujourd_hui).aggregate(total=Sum('total_paiement'))['total'] or 0
+    chiffre_semaine = Commande.objects.filter(date_commande__date__gte=semaine).aggregate(total=Sum('total_paiement'))['total'] or 0
+    chiffre_mois = Commande.objects.filter(date_commande__date__gte=mois).aggregate(total=Sum('total_paiement'))['total'] or 0
+
+    plats_populaires = Plat.objects.annotate(
+        nombre_commandes=Count('lignedecommande')
+    ).order_by('-nombre_commandes')[:5]
+
+    total_tables = 20 
+    tables_occupees = Reservation.objects.filter(date_reservation=aujourd_hui).count()
+    taux_occupation = (tables_occupees / total_tables * 100) if total_tables > 0 else 0
+
+    context = {
+        'chiffre_jour': chiffre_jour,
+        'chiffre_semaine': chiffre_semaine,
+        'chiffre_mois': chiffre_mois,
+        'plats_populaires': plats_populaires,
+        'tables_occupees': tables_occupees,
+        'total_tables': total_tables,
+        'taux_occupation': taux_occupation,
+    }
+    return render(request, 'authentification/accueil.html', context)
 
 @role_required('Client')
 def client(request):
@@ -50,31 +89,22 @@ def auth_view(request):
     if request.method == 'POST':
         if 'login' in request.POST:
             login_form = LoginForm(request, data=request.POST)
-            username = request.POST.get('username')
-            password = request.POST.get('password')
-
-            try:
-                Utilisateur.objects.get(username=username)
-            except Utilisateur.DoesNotExist:
-                messages.error(request, "Ce compte n'existe pas. Veuillez créer un compte d'abord.")
-                return render(request, 'authentification/connexion.html', {
-                    'login_form': login_form,
-                    'register_form': register_form,
-                })
 
             if login_form.is_valid():
                 user = login_form.get_user()
                 login(request, user)
 
+                messages.success(request, f"Bienvenue, {user.username} !")
+
                 role = user.role
                 if role == 'Administrateur':
-                    return redirect('/admin/')
+                    return redirect('liste_reservations_admin')
                 elif role == 'Client':
                     return redirect('client')
                 elif role == 'Serveur':
                     return redirect('serveur')
                 elif role == 'Cuisinier':
-                    return redirect('commandes')
+                    return redirect('cuisinier_dashboard')
                 elif role == 'Caissier':
                     return redirect('commandes_a_valider')
                 elif role == 'Livreur':
@@ -82,7 +112,7 @@ def auth_view(request):
                 else:
                     return redirect('accueil')
             else:
-                messages.error(request, "Mot de passe incorrect.")
+                messages.error(request, "Nom d'utilisateur ou mot de passe incorrect.")
 
         elif 'register' in request.POST:
             register_form = RegisterForm(request.POST)
@@ -93,21 +123,22 @@ def auth_view(request):
 
                 role = user.role
                 if role == 'Administrateur':
-                    return redirect('/admin/')
+                    return redirect('liste_reservations_admin')
                 elif role == 'Client':
                     return redirect('client')
                 elif role == 'Serveur':
                     return redirect('serveur')
                 elif role == 'Cuisinier':
-                    return redirect('commandes')
+                    return redirect('cuisinier_dashboard')
                 elif role == 'Caissier':
-                    return redirect('caissier')
+                    return redirect('commandes_a_valider')
                 elif role == 'Livreur':
                     return redirect('livreur')
                 else:
                     return redirect('accueil')
             else:
                 messages.error(request, "Erreur lors de l'inscription. Veuillez corriger les erreurs.")
+                
 
     return render(request, 'authentification/connexion.html', {
         'login_form': login_form,
@@ -125,11 +156,24 @@ def logout_view(request):
 # =============================================================
 
 def menu(request):
-    plats = Plat.objects.all().order_by('nom') 
+    search_query = request.GET.get('q', '')
+
+    plats = Plat.objects.all()
+
+    if search_query:
+        plats = plats.filter(
+            Q(nom__icontains=search_query) |
+            Q(description__icontains=search_query)
+        ).order_by('nom')
+    else:
+        plats = plats.order_by('nom')
+
     panier_count = sum(item['quantite'] for item in request.session.get('panier', {}).values())
+
     context = {
         'plats': plats,
-        'panier_count': panier_count
+        'panier_count': panier_count,
+        'search_query': search_query,
     }
     return render(request, 'client/menu.html', context)
 
@@ -232,7 +276,7 @@ def faire_reservation(request):
     reservations_confirmees = Reservation.objects.filter(
         client=request.user,
         est_confirmee=True,
-        date_reservation__gte=date.today() # Seulement les réservations futures ou d'aujourd'hui
+        date_reservation__gte=date.today()
     ).order_by('date_reservation', 'heure_reservation')
 
     context = {
@@ -245,19 +289,6 @@ def faire_reservation(request):
 # =============================================================
 # VUES DE COMMANDE ET DE PAIEMENT
 # =============================================================
-
-# MODE_TEST_PAIEMENT = True
-
-# def handle_mock_payment(request, commande):
-#     print(f"Mode de test activé : Paiement simulé pour la commande #{commande.id}.")
-#     commande.statut = 'en_cours'
-#     commande.save()
-    
-#     if 'panier' in request.session:
-#         del request.session['panier']
-    
-#     return render(request, 'client/confirmation_commande.html', {'commande': commande})
-
 
 @login_required
 def validation_commande(request):
@@ -272,17 +303,16 @@ def validation_commande(request):
     reservations_actives = Reservation.objects.filter(
         client=request.user,
         est_confirmee=True,
-        date_reservation=today # Filtre les réservations d'aujourd'hui ou futures
+        date_reservation=today
     ).exclude(
-        # Exclut les réservations déjà liées à une commande en salle qui est 'livrée' (servie)
         commandes__mode_commande='salle',
-        commandes__statut='livree' # Assurez-vous que 'livree' est le statut final pour le service en salle
+        commandes__statut='livree'
     ).order_by('date_reservation', 'heure_reservation')
 
     context = {
         'panier': panier,
         'total': total,
-        'reservations': reservations_actives, # <-- AJOUTEZ CETTE LIGNE !
+        'reservations': reservations_actives,
         'user_phone': request.user.telephone or ''
     }
     return render(request, 'client/validation_commande.html', context)
@@ -292,20 +322,19 @@ def payer_commande(request):
     if not request.user.is_authenticated:
         return redirect('connexion')
 
-    commande_id = request.session.get('commande_id_en_cours') # <-- Récupère l'ID de commande
-    if not commande_id: # <-- Validation de l'ID
+    commande_id = request.session.get('commande_id_en_cours')
+    if not commande_id:
         messages.error(request, "Aucune commande en cours de traitement pour le paiement.")
         return redirect('menu')
 
-    commande = get_object_or_404(Commande, id=commande_id, client=request.user) # <-- Récupère la commande depuis la BDD
+    commande = get_object_or_404(Commande, id=commande_id, client=request.user)
 
-    if commande.statut == 'payé': # <-- AJOUT
+    if commande.statut == 'payé':
         messages.info(request, "Cette commande a déjà été payée.")
         return redirect('detail_commande', commande_id=commande.id)
 
     invoice = CheckoutInvoice()
 
-    # AJOUT : Ajout des items depuis les lignes de commande de la BDD
     total = 0
     for item_line in commande.lignes.all():
         invoice.add_item(
@@ -313,21 +342,19 @@ def payer_commande(request):
             quantity=item_line.quantite,
             unit_price=float(item_line.prix_unitaire)
         )
-        total += float(item_line.total_ligne) # Utilise le total_ligne de la LigneDeCommande
+        total += float(item_line.total_ligne)
 
     invoice.total_amount = total
-    invoice.description = f"Commande #{commande.id} sur L'occidental" # <-- Description plus spécifique
+    invoice.description = f"Commande #{commande.id} sur L'occidental"
 
-    # AJOUT : Ajoute l'ID de commande aux URLs de redirection
     invoice.return_url = request.build_absolute_uri(reverse('paiement_success') + f'?commande_id={commande.id}')
     invoice.cancel_url = request.build_absolute_uri(reverse('paiement_cancel') + f'?commande_id={commande.id}')
 
-    # ... (infos client et création facture)
     if invoice.create():
         return redirect(invoice.url)
     else:
-        messages.error(request, f"Erreur lors de la création de la facture PayDunya : {invoice.response_text}") # <-- Message d'erreur plus détaillé
-        return render(request, 'client/erreur.html', {'message': invoice.response_text}) # <-- Gère l'erreur de manière plus propre
+        messages.error(request, f"Erreur lors de la création de la facture PayDunya : {invoice.response_text}")
+        return render(request, 'client/erreur.html', {'message': invoice.response_text})
 
 
 def paiement_success(request):
@@ -346,11 +373,8 @@ def paiement_success(request):
 
     invoice = CheckoutInvoice()
     confirmation = invoice.confirm(token)
-    
-    # Adaptez la condition ci-dessous selon la réponse réelle de PayDunya.
-    # Utilisez 'status' ou 'response_code' selon ce que PayDunya renvoie pour un succès.
+   
     if confirmation and confirmation.get("status") == "completed":
-    # OU si confirmation et confirmation.get("response_code") == "00":
         try:
             with transaction.atomic():
                 commande.statut = 'en_cours' 
@@ -408,9 +432,26 @@ def mes_commandes(request):
 
 @login_required
 def detail_commande(request, commande_id):
-    commande = Commande.objects.get(id=commande_id, client=request.user)
-    lignes = commande.lignecommande_set.select_related('plat')
-    return render(request, 'client/detail_commande.html', {'commande': commande, 'lignes': lignes})
+    commande = get_object_or_404(
+        Commande.objects.select_related('client', 'reservation').prefetch_related('lignes__plat'),
+        id=commande_id,
+        client=request.user
+    )
+
+    lignes_details = []
+    for ligne in commande.lignes.all():
+        lignes_details.append({
+            'plat': ligne.plat,
+            'quantite': ligne.quantite,
+            'prix_unitaire': ligne.prix_unitaire,
+            'sous_total': ligne.quantite * ligne.prix_unitaire
+        })
+
+    context = {
+        'commande': commande,
+        'lignes_details': lignes_details,
+    }
+    return render(request, 'client/detail_commande.html', context)
 
 
 @login_required
@@ -433,10 +474,7 @@ def traitement_commande(request):
             if choix_adresse == 'manuelle':
                 adresse_livraison = request.POST.get('adresse_livraison')
             elif choix_adresse == 'carte':
-                # Les coordonnées viennent ici au format "lat,lng"
                 coordonnees = request.POST.get('coordonnees_livraison')
-                # Vous pourriez vouloir stocker les coordonnées et l'adresse textuelle séparément
-                # Pour l'instant, on stocke les coordonnées ou l'adresse textuelle complète si dispo.
                 adresse_livraison = request.POST.get('adresse_textuelle') or coordonnees
                 if not adresse_livraison:
                     messages.error(request, "Veuillez sélectionner une adresse sur la carte ou la saisir manuellement.")
@@ -454,7 +492,6 @@ def traitement_commande(request):
             reservation_id = request.POST.get('reservation_id')
             if reservation_id and reservation_id != 'none':
                 try:
-                    # S'assurer que la réservation appartient à l'utilisateur et est confirmée
                     reservation = Reservation.objects.get(id=reservation_id, client=request.user, est_confirmee=True)
                 except Reservation.DoesNotExist:
                     messages.error(request, "Réservation sélectionnée invalide ou non confirmée.")
@@ -498,9 +535,6 @@ def traitement_commande(request):
                 request.session.modified = True
 
                 if methode_paiement == 'especes':
-                    # commande.statut = 'en_attente'
-                    # commande.moyen_paiement = 'espece'
-                    # commande.save()
                     if 'panier' in request.session:
                         del request.session['panier']
                     request.session.modified = True
@@ -522,7 +556,7 @@ def traitement_commande(request):
             return redirect('validation_commande')
         except Exception as e:
             messages.error(request, f"Une erreur inattendue s'est produite lors de la commande : {e}")
-            print(f"Erreur commande: {e}") # Pour le debug
+            print(f"Erreur commande: {e}")
             return redirect('validation_commande')
 
     messages.error(request, "Méthode de requête non autorisée.")
@@ -531,41 +565,49 @@ def traitement_commande(request):
 
 @role_required('Caissier')
 def commandes_a_valider(request):
-    commandes = Commande.objects.filter(
-        moyen_paiement='espece',
-        statut__in=['en_attente', 'en_cours']
-    ).select_related('client')
+    commandes_en_attente = Commande.objects.filter(statut='en_attente')
 
-    return render(request, 'caissier/commandes_a_valider.html', {'commandes': commandes})
+    if request.method == 'POST':
+        commande_id = request.POST.get('commande_id')
+        if commande_id:
+            try:
+                commande = get_object_or_404(Commande, id=commande_id, statut='en_attente')
+                commande.statut = 'en_cours'
+                commande.save()
+                messages.success(request, f"La commande {commande.numero_commande} a été validée et est maintenant 'en cours'.")
+            except Exception as e:
+                messages.error(request, f"Une erreur s'est produite lors de la validation : {e}")
+        # CHANGEMENT ICI : Utilisez le nom de l'URL correcte
+        return redirect('commandes_a_valider') # Ou le nom que vous donnerez à cette URL dans urls.py
 
-# @role_required('Caissier')
-# def valider_paiement(request, commande_id):
-#     commande = get_object_or_404(Commande, id=commande_id, moyen_paiement='espece')
-#     commande.statut = 'payé'
-#     commande.save()
-#     messages.success(request, f"Le paiement de la commande #{commande.id} a été validé.")
-#     return redirect('commandes_a_valider')
+    context = {
+        'commandes_en_attente': commandes_en_attente
+    }
+    return render(request, 'caissier/commandes_a_valider.html', context)
 
 
 @role_required('Caissier')
 def valider_paiement(request, commande_id):
-    commande = get_object_or_404(Commande, id=commande_id, moyen_paiement='espece')
+    commande = get_object_or_04(Commande, id=commande_id, moyen_paiement='espece')
 
     if commande.statut == 'en_attente':
-        commande.statut = 'en_cours' 
+        commande.statut = 'en_cours'
         commande.save()
         messages.success(request, f"Le paiement de la commande #{commande.id} a été validé. La commande est maintenant 'En cours de préparation'.")
+
+        messages.info(request,
+                      f"Cliquez <a href=\"{reverse('generer_facture_pdf', args=[commande.id])}\" target=\"_blank\" class=\"alert-link\">ici</a> pour générer la facture PDF de la commande #{commande.id}.")
+
     elif commande.statut == 'en_cours':
         messages.info(request, f"La commande #{commande.id} est déjà 'En cours de préparation'. Aucune action nécessaire.")
     else:
         messages.warning(request, f"La commande #{commande.id} ne peut pas être validée car son statut est '{commande.get_statut_display()}'.")
 
-    return redirect('commandes_a_valider')
+    return redirect('commandes_a_valider') 
 
 def get_address_from_coords(latitude, longitude):
-    geolocator = Nominatim(user_agent="L_Occidental_Restaurant_Facture_PDF") # User-Agent unique
+    geolocator = Nominatim(user_agent="L_Occidental_Restaurant_Facture_PDF")
     try:
-        # Augmentez le timeout si vous avez des problèmes de connexion
         location = geolocator.reverse(f"{latitude}, {longitude}", timeout=10) 
         if location:
             return location.address
@@ -582,137 +624,120 @@ def get_address_from_coords(latitude, longitude):
 def generer_facture_pdf(request, commande_id):
     commande = get_object_or_404(Commande, id=commande_id)
 
-    # Sécurité : Assurez-vous que seul le client propriétaire de la commande peut télécharger sa facture
     if request.user != commande.client and not request.user.is_staff:
         messages.error(request, "Vous n'êtes pas autorisé à accéder à cette facture.")
         return redirect('menu')
 
-    # Vérifiez que la commande est bien payée ou traitée
     if commande.statut == 'en_attente' or commande.statut == 'annulee':
         messages.warning(request, "La facture ne peut pas être générée pour une commande en attente ou annulée.")
         return redirect('detail_commande', commande_id=commande.id)
 
-    adresse_livraison_display = commande.adresse_livraison # Initialisation
+    adresse_livraison_display = commande.adresse_livraison
 
     if commande.mode_commande == 'livraison' and commande.adresse_livraison:
         try:
-            # Tente de séparer la chaîne 'lat,lon'
             lat_str, lon_str = commande.adresse_livraison.split(',')
             latitude = float(lat_str.strip())
             longitude = float(lon_str.strip())
             
-            # Effectue le géocodage inverse
             resolved_address = get_address_from_coords(latitude, longitude)
             
             if resolved_address:
                 adresse_livraison_display = resolved_address
             else:
-                # Si la résolution échoue, affiche les coordonnées avec un message d'erreur
                 adresse_livraison_display = f"Erreur de résolution d'adresse (Coordonnées: {commande.adresse_livraison})"
         except (ValueError, IndexError):
-            # Si la chaîne n'est pas au format "lat,lon", c'est peut-être déjà une adresse textuelle.
-            # On conserve la valeur actuelle de commande.adresse_livraison.
-            pass 
+            pass
         except Exception as e:
-            # Pour d'autres erreurs inattendues (ex: problème réseau avec l'API)
             print(f"Erreur inattendue lors du traitement de l'adresse de livraison pour PDF: {e}")
             adresse_livraison_display = f"Erreur de résolution d'adresse (Coordonnées: {commande.adresse_livraison})"
 
 
-    template_path = 'client/facture_pdf.html' 
+    template_path = 'client/facture_pdf.html'
     context = {
         'commande': commande,
-        # Assurez-vous que 'lignes' est le related_name correct dans LigneDeCommande
-        'lignes_commande': commande.lignes.all(), 
+        'lignes_commande': commande.lignes.all(),
         'adresse_livraison_display': adresse_livraison_display,
-        'date_generation': datetime.now().strftime('%d/%m/%Y %H:%M'), # Utilisez datetime.now()
+        'date_generation': datetime.now().strftime('%d/%m/%Y %H:%M'),
     }
     template = get_template(template_path)
     html = template.render(context)
 
     response = BytesIO()
     pdf = pisa.CreatePDF(
-        BytesIO(html.encode("UTF-8")), # Important: encodez le HTML en UTF-8
+        BytesIO(html.encode("UTF-8")),
         dest=response,
-        encoding='UTF-8' # Spécifiez l'encodage pour pisa
+        encoding='UTF-8'
     )
 
     if not pdf.err:
         response_pdf = HttpResponse(response.getvalue(), content_type='application/pdf')
         response_pdf['Content-Disposition'] = f'attachment; filename="facture_commande_{commande.id}.pdf"'
         return response_pdf
-    
-    messages.error(request, f"Impossible de générer la facture PDF. Erreur: {pdf.err}") 
+
+    messages.error(request, f"Impossible de générer la facture PDF. Erreur: {pdf.err}")
     return redirect('detail_commande', commande_id=commande.id)
 
-def mail_reservation(request, reservation_id):
+@login_required
+def liste_reservations_admin(request):
+    """
+    Affiche un tableau de bord des réservations pour l'administrateur.
+    Filtre les réservations non confirmées et à venir.
+    """
+    reservations_a_confirmer = Reservation.objects.filter(
+        est_confirmee=False,
+        date_reservation__gte=timezone.now().date()
+    ).order_by('date_reservation', 'heure_reservation')
+
+    context = {
+        'reservations': reservations_a_confirmer,
+    }
+    return render(request, 'admin/admin_dashboard_reservations.html', context)
+
+
+@login_required
+def confirmer_reservation_par_admin(request, reservation_id):
+    """
+    Confirme une réservation et envoie un e-mail de confirmation au client.
+    """
     reservation = get_object_or_404(Reservation, id=reservation_id)
 
-    if reservation.est_confirmee:
-        try:
-            email_context = {
-                'reservation': reservation,
-            }
+    if request.method == 'POST':
+        if not reservation.est_confirmee:
+            reservation.est_confirmee = True
+            reservation.date_confirmation = timezone.now()
+            reservation.confirme_par = request.user
+            reservation.save()
 
-            html_message = render_to_string('emails/confirmation_reservation_client.html', email_context)
+            messages.success(request, f"La réservation #{reservation.id} a été confirmée avec succès.")
 
-            subject = f"Votre réservation #{reservation.id}
-            to_email = reservation.client.email
-            from_email = 'asdieng.elc@gmail.com'
+            send_reservation_confirmation_email(request, reservation)
 
-            if to_email:
-                email = EmailMessage(
-                    subject,
-                    html_message,
-                    from_email,
-                    [to_email], 
-                )
-                email.content_subtype = "html"
-                email.send()
-                messages.success(request, f"E-mail de confirmation envoyé pour la réservation #{reservation.id}.")
-            else:
-                messages.warning(request, f"L'e-mail du client pour la réservation #{reservation.id} est manquant. E-mail non envoyé.")
+        else:
+            messages.info(request, f"La réservation #{reservation.id} est déjà confirmée.")
 
-        except Exception as e:
-            messages.error(request, f"Erreur lors de l'envoi de l'e-mail pour la réservation #{reservation.id}: {e}")
+    return redirect('liste_reservations_admin')
+
+@login_required
+def annuler_reservation_par_admin(request, reservation_id):
+    reservation = get_object_or_404(Reservation, id=reservation_id)
+
+    if request.method == 'POST':
+        if not reservation.est_confirmee:
+            reservation.statut = 'annulee'
+            reservation.save()
+            messages.success(request, f"La réservation #{reservation.id} a été annulée avec succès.")
+        else:
+            messages.warning(request, f"La réservation #{reservation.id} est déjà confirmée et ne peut pas être annulée directement depuis ici.")
     else:
-        messages.info(request, f"La réservation #{reservation.id} n'est pas confirmée. L'e-mail de confirmation n'a pas été envoyé.")
+        messages.error(request, "Requête non valide.")
 
-    return redirect('client') #
+    return redirect('liste_reservations_admin')
 
 
 # =============================================================
 # VUES D'ADMINISTRATION
 # =============================================================
-
-@login_required
-def faire_reservation(request):
-    if request.method == 'POST':
-        # Traiter les données du formulaire de réservation
-        date_res = request.POST.get('date_reservation')
-        heure_res = request.POST.get('heure_reservation')
-        nb_personnes = request.POST.get('nombre_personnes')
-        
-        # Créer l'objet Reservation
-        reservation = Reservation.objects.create(
-            client=request.user,
-            date_reservation=date_res,
-            heure_reservation=heure_res,
-            nombre_personnes=nb_personnes
-        )
-        
-        # Rediriger vers la page de confirmation ou vers le menu
-        return redirect('menu') 
-    
-    # Rendre le formulaire de réservation
-    return render(request, 'client/reservation.html')
-
-
-def role_required(role):
-    def decorator(view_func):
-        return user_passes_test(lambda u: u.is_authenticated and u.role == role)(view_func)
-    return decorator
-
 
 @role_required('Serveur')
 def serveur_dashboard(request):
@@ -724,24 +749,23 @@ def serveur_dashboard(request):
     context = {
         'commandes': commandes_salle_pretes
     }
-    return render(request, 'serveur/serveur.html')
+    return render(request, 'serveur/serveur.html', context)
 
 @role_required('Serveur')
 def marquer_servie(request, commande_id):
     commande = get_object_or_404(Commande, id=commande_id, mode_commande='salle', statut='prete')
     if request.method == 'POST':
-        commande.statut = 'livree' # Pour le service en salle, 'livree' peut signifier 'servie'
+        commande.statut = 'livree'
         commande.save()
         messages.success(request, f"Commande #{commande.id} marquée comme servie.")
     return redirect('serveur')
 
 @role_required('Livreur')
 def livreur_dashboard(request):
-    # Commandes prêtes pour la livraison
     commandes_livraison_pretes = Commande.objects.filter(
         mode_commande='livraison',
         statut='prete'
-    ).select_related('client').prefetch_related('lignedecommande_set__plat').order_by('date_commande')
+    ).select_related('client').prefetch_related('lignes__plat').order_by('date_commande')
 
     context = {
         'commandes': commandes_livraison_pretes
@@ -756,14 +780,6 @@ def marquer_livree(request, commande_id):
         commande.save()
         messages.success(request, f"Commande #{commande.id} marquée comme livrée.")
     return redirect('livreur')
-
-@role_required('Cuisinier')
-def cuisinier_dashboard(request):
-    return render(request, 'cuisinier.html')
-
-@role_required('Caissier')
-def caissier_dashboard(request):
-    return render(request, 'caissier.html')
 
 
 # def logout_view(request):
@@ -781,35 +797,24 @@ def test_email(request):
     )
     return render(request, 'authentification/email_envoye.html')
 
-
-
-
-# def commandes_view(request):
-#     print("✅ Vue cuisinier appelée")
-#     # Récupérer toutes les commandes avec leurs lignes associées
-#     commandes = Commande.objects.prefetch_related('lignes__plat').select_related('client')
-
-
-#     return render(request, 'cuisinier.html', {
-#         'commandes': commandes
-#     })
-
-def commandes_view(request):
-    commandes = Commande.objects.all().prefetch_related('lignes')  # Optimisation
-
+@role_required('Cuisinier')
+def cuisinier_dashboard(request):
+    commandes = Commande.objects.filter(
+        statut='en_cours'
+    ).prefetch_related('lignes__plat').order_by('date_commande')
     for commande in commandes:
-        commande.calculer_total()  # ✅ Met à jour le total automatiquement
-
+        commande.calculer_total()
     return render(request, 'cuisinier.html', {'commandes': commandes})
 
 
+
 @login_required
-def changer_statut_commande(request, commande_id):
-    if request.method == 'POST':
-        commande = get_object_or_404(Commande, id=commande_id)
-        nouveau_statut = request.POST.get('statut')
-        if nouveau_statut in ['en_attente', 'en_cours', 'prete', 'livree', 'annulee']:
-            commande.statut = nouveau_statut
+def changer_statut_commande(request, id):
+    if request.method == "POST":
+        commande = get_object_or_404(Commande, id=id)
+        nouveau_statut = request.POST.get("statut")
+        if nouveau_statut == 'prete':
+            commande.statut = 'prete'
             commande.save()
     return redirect('commandes')
 

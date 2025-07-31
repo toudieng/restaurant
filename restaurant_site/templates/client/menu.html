@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}Menu - L'occidental{% endblock %}
-{% block style %}
+{% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/client/menu.css' %}">
 {% endblock %}
 
@@ -26,11 +26,24 @@
                 <h4>Un voyage de saveurs inoubliables</h4>
             </div>
         </div>
+
+        <div class="row mb-4 justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <form action="{% url 'menu' %}" method="GET" class="d-flex">
+                    <input class="form-control me-2" type="search" placeholder="Rechercher un plat par nom ou description..." aria-label="Search" name="q" value="{{ search_query }}">
+                    <button class="btn btn-outline-success" type="submit">Rechercher</button>
+                    {% if search_query %}
+                        <a href="{% url 'menu' %}" class="btn btn-outline-secondary ms-2">Réinitialiser</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
         <div class="row">
             {% for plat in plats %}
             <div class="col-lg-4 col-md-6 mb-4">
                 <div class="card h-100 shadow-sm">
-                    <img src="{{ plat.image.url }}" class="card-img-top" alt="{{ plat.nom }}">
+                    <img src="{{ plat.image.url }}" class="card-img-top" alt="{{ plat.nom }}" style="max-height: 200px; object-fit: cover;">
                     <div class="card-body">
                         <h5 class="card-title"><strong>{{ plat.nom }}</strong>
                             {% if plat.specialite_du_jour %}
@@ -46,7 +59,7 @@
                             {% csrf_token %}
                             <button type="submit" class="btn btn-primary w-100">Ajouter au panier</button>
                         </form>
-                        <!-- <a href="#" class="btn btn-outline-primary mt-auto">Découvrir</a> -->
+                       
                     </div>
                 </div>
             </div>

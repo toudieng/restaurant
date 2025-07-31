@@ -108,7 +108,6 @@
 
 {% block extra_js %}
 <script>
-    // ... votre code JavaScript existant pour la gestion des radios et de la carte ...
     document.addEventListener('DOMContentLoaded', function() {
         const modeCommandeRadios = document.querySelectorAll('input[name="mode_commande"]');
         const sectionLivraison = document.getElementById('section_livraison');
@@ -160,7 +159,6 @@
                         const lng = e.latlng.lng;
                         document.getElementById('coordonnees_livraison').value = `${lat},${lng}`;
 
-                        // Appel API Nominatim pour récupérer l'adresse
                         fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
                             .then(response => response.json())
                             .then(data => {

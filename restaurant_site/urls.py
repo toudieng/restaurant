@@ -11,9 +11,12 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('menu/', views.menu, name='menu'),
     path('client/', views.client, name='client'),
-    path('cuisinier/', views.cuisinier_dashboard, name='cuisinier'),
 
-    path('commandes/', views.commandes_view, name='commandes'),
+    #path('commandes/', views.cuisinier_dashboard, name='commandes'),
+    path('changer-statut-commande/<int:id>/', views.changer_statut_commande, name='changer_statut_commande'),
+    path('cuisinier/dashboard', views.cuisinier_dashboard, name='cuisinier_dashboard'),
+
+
 
     path('renitialiser_password/', auth_views.PasswordResetView.as_view(
         template_name='authentification/renitialiser_password.html'), name='password_reset'),
@@ -42,15 +45,20 @@ urlpatterns = [
     path('commande/<int:commande_id>/', views.detail_commande, name='detail_commande'),
 
     path('caissier/commandes/', views.commandes_a_valider, name='commandes_a_valider'),
-    path('caissier/valider/<int:commande_id>/', views.valider_paiement, name='valider_paiement'),
+    #path('caissier/valider/<int:commande_id>/', views.valider_paiement, name='valider_paiement'),
+    path('caissier/commandes/<int:commande_id>/valider-paiement/', views.valider_paiement, name='valider_paiement'),
 
-    path('serveur/dashboard/', views.serveur_dashboard, name='serveur'), # Nouvelle URL
+    path('serveur/dashboard/', views.serveur_dashboard, name='serveur'),
     path('serveur/marquer_servie/<int:commande_id>/', views.marquer_servie, name='marquer_servie'),
 
-    path('livreur/dashboard/', views.livreur_dashboard, name='livreur'), # Nouvelle URL
+    path('livreur/dashboard/', views.livreur_dashboard, name='livreur'),
     path('livreur/marquer_livree/<int:commande_id>/', views.marquer_livree, name='marquer_livree'),
 
     path('commande/<int:commande_id>/facture/pdf/', views.generer_facture_pdf, name='generer_facture_pdf'),
+
+    path('admin-dashboard/reservations/', views.liste_reservations_admin, name='liste_reservations_admin'),
+    path('admin-dashboard/reservations/confirmer/<int:reservation_id>/', views.confirmer_reservation_par_admin, name='confirmer_reservation_par_admin'),
+    path('admin/reservations/annuler/<int:reservation_id>/', views.annuler_reservation_par_admin, name='annuler_reservation_par_admin'),
 
 ]
 

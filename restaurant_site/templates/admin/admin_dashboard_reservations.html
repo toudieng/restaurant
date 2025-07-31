@@ -1,0 +1,69 @@
+{% extends 'client/base.html' %} {# Utilisez votre template de base #}
+{% load static %}
+
+{% block title %}Admin Dashboard Réservations{% endblock %}
+
+{% block content %}
+<main class="container mt-5 pt-5">
+    <h2 class="my-4">Tableau de bord des Réservations</h2>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h3 class="my-3">Réservations en attente de confirmation</h3>
+    
+    {% if reservations %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover table-bordered table-sm">
+            <thead>
+                <tr class="table-dark">
+                    <th>ID</th>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Heure</th>
+                    <th>Personnes</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                <tr>
+                    <td>{{ reservation.id }}</td>
+                    <td>{{ reservation.client.get_full_name|default:reservation.client.username }}</td>
+                    <td>{{ reservation.date_reservation|date:"d M Y" }}</td>
+                    <td>{{ reservation.heure_reservation|time:"H:i" }}</td>
+                    <td>{{ reservation.nombre_personnes }}</td>
+                    <td>
+                        {% if not reservation.est_confirmee %}
+                            <form action="{% url 'confirmer_reservation_par_admin' reservation.id %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-sm">Confirmer</button>
+                            </form>
+                            <form action="{% url 'annuler_reservation_par_admin' reservation.id %}" method="post" style="display: inline; margin-left: 5px;"> {# Ajoutez une petite marge pour l'espacement #}
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">Annuler</button>
+                            </form>
+                        {% elif reservation.statut == 'annulee' %} {# Si vous avez un champ 'statut' #}
+                            <span class="text-danger">Annulée</span>
+                        {% else %}
+                            <span class="text-success">Confirmée</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="alert alert-info">Aucune réservation en attente de confirmation pour le moment.</p>
+    {% endif %}
+
+    {# Vous pouvez ajouter d'autres sections ici pour les réservations confirmées, passées, etc. #}
+
+</main>
+{% endblock %}

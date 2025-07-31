@@ -6,36 +6,36 @@
         body {
             font-family: Arial, sans-serif;
             font-size: 10pt;
-            margin: 10mm; /* Réduit les marges globales pour gagner de l'espace */
+            margin: 10mm;
         }
         h1, h2, h3 {
             color: #333;
         }
-        /* Style général des tableaux */
+        
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 5mm; /* Moins d'espace après les tableaux */
-            page-break-inside: auto; /* Permet les sauts de page à l'intérieur de la table */
+            margin-bottom: 5mm;
+            page-break-inside: auto;
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 5px; /* Réduit le padding des cellules de tableau d'articles */
+            padding: 5px;
             text-align: left;
         }
         th {
             background-color: #f2f2f2;
         }
         thead {
-            display: table-header-group; /* Répète l'en-tête du tableau sur chaque nouvelle page */
+            display: table-header-group;
         }
         tr {
-            page-break-inside: avoid; /* Essaye d'éviter de couper les lignes */
+            page-break-inside: avoid;
         }
         .text-right {
             text-align: right;
         }
-        /* Header et Footer (position fixes) */
+        
         .header, .footer {
             width: 100%;
             text-align: center;
@@ -44,48 +44,42 @@
         .header {
             top: 0;
             border-bottom: 1px solid #eee;
-            padding: 5mm 0; /* Padding vertical, pas de padding horizontal forcé */
-            /* Ajoutez min-height si le contenu du header est très petit et vous voulez un minimum d'espace */
-            /* min-height: 20mm; */
+            padding: 5mm 0;
         }
         .footer {
             bottom: 0;
             border-top: 1px solid #eee;
-            padding: 5mm 0; /* Padding vertical, pas de padding horizontal forcé */
-            /* Ajoutez min-height si le contenu du footer est très petit */
-            /* min-height: 15mm; */
+            padding: 5mm 0;
         }
-        /* Contenu principal de la page, avec des marges pour éviter le chevauchement avec header/footer */
+        
         .content-area {
-            /* Ces marges doivent être au moins égales aux hauteurs de votre header/footer
-               plus leurs paddings et bordures. Ajustez si nécessaire. */
-            margin-top: 25mm; /* Un peu moins que 40mm pour rapprocher le contenu du haut */
-            margin-bottom: 15mm; /* Espace suffisant pour le footer */
+            margin-top: 25mm;
+            margin-bottom: 15mm;
         }
-        /* Nouveau style pour la table des informations de commande (pour la compacter) */
+    
         .info-commande {
-            border: none; /* Pas de bordures pour cette table */
-            margin-bottom: 10mm; /* Moins d'espace après les infos de commande */
+            border: none;
+            margin-bottom: 10mm;
         }
         .info-commande td {
-            border: none; /* Pas de bordures pour les cellules d'info */
-            padding: 1px 0; /* Très peu de padding pour les cellules d'info */
-            vertical-align: top; /* Aligne le contenu en haut des cellules */
+            border: none; 
+            padding: 1px 0; 
+            vertical-align: top;
         }
-        /* Style pour le total de la commande */
+        
         .total {
             font-size: 14pt;
             font-weight: bold;
-            page-break-before: avoid; /* Essaye d'éviter un saut de page juste avant le total */
-            margin-top: 5mm; /* Un peu d'espace avant le total, mais pas trop */
+            page-break-before: avoid;
+            margin-top: 5mm; 
         }
-        /* Ajustement pour les titres pour réduire les marges par défaut */
+        
         h2, h3 {
             margin-top: 5mm;
             margin-bottom: 3mm;
         }
         p {
-            margin-top: 2px; /* Réduire l'espace entre les paragraphes */
+            margin-top: 2px;
             margin-bottom: 2px;
         }
     </style>

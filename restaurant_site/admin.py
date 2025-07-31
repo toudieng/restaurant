@@ -19,20 +19,20 @@ class PlatAdmin(admin.ModelAdmin):
 
 class UtilisateurAdmin(UserAdmin):
     model = Utilisateur
-    list_display = UserAdmin.list_display + ('role',)
+    list_display = UserAdmin.list_display + ('role', 'email')
     fieldsets = UserAdmin.fieldsets + (
         (None, {'fields': ('role',)}),
     )
 
     add_fieldsets = UserAdmin.add_fieldsets + (
-        (('Rôle', {'fields': ('role',)}),)
+        (('Rôle et Email', {'fields': ('role', 'email')}),)
     )
 
 admin.site.register(Utilisateur, UtilisateurAdmin)    
 
 class LigneDeCommandeInline(admin.TabularInline):
     model = LigneDeCommande
-    extra = 0 # Ne pas afficher de lignes vides par défaut
+    extra = 0 
     readonly_fields = ['prix_unitaire', 'total_ligne']
 
 admin.site.register(LigneDeCommande)
@@ -46,7 +46,6 @@ class CommandeAdmin(admin.ModelAdmin):
     readonly_fields = ['date_commande', 'total_paiement']
     inlines = [LigneDeCommandeInline]
 
-    # Méthode pour mettre à jour le total quand la commande est enregistrée
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         obj.calculer_total()

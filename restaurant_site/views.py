@@ -643,7 +643,7 @@ def commandes_a_valider(request):
                 messages.success(request, f"La commande {commande.commande_id} a été validée et est maintenant 'en cours'.")
             except Exception as e:
                 messages.error(request, f"Une erreur s'est produite lors de la validation : {e}")
-        return redirect('admin_valider_commandes') # Redirige pour éviter la soumission multiple du formulaire
+        return redirect('admin_valider_commandes')
 
     context = {
         'commandes_en_attente': commandes_en_attente
@@ -747,10 +747,6 @@ def generer_facture_pdf(request, commande_id):
 
 @login_required
 def liste_reservations_admin(request):
-    """
-    Affiche un tableau de bord des réservations pour l'administrateur.
-    Filtre les réservations non confirmées et à venir.
-    """
     reservations_a_confirmer = Reservation.objects.filter(
         est_confirmee=False,
         date_reservation__gte=timezone.now().date()
@@ -764,9 +760,6 @@ def liste_reservations_admin(request):
 
 @login_required
 def confirmer_reservation_par_admin(request, reservation_id):
-    """
-    Confirme une réservation et envoie un e-mail de confirmation au client.
-    """
     reservation = get_object_or_404(Reservation, id=reservation_id)
 
     if request.method == 'POST':

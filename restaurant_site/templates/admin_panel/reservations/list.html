@@ -26,7 +26,7 @@
                     <td>{{ reservation.heure_reservation }}</td>
                     <td>{{ reservation.nombre_personnes }}</td>
                     <td>
-                        <form method="post" action="{% url 'admin_reservation_toggle_confirmation' reservation.pk %}" style="display:inline;">
+                        <form method="post" action="{% url 'confirmer_reservation_par_admin' reservation_id=reservation.pk %}" style="display:inline;">
                             {% csrf_token %}
                             <button type="submit" class="btn {% if reservation.est_confirmee %}btn-success{% else %}btn-warning{% endif %}">
                                 {% if reservation.est_confirmee %}Oui{% else %}Non{% endif %}

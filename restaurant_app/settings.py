@@ -158,6 +158,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'asdieng.elc@gmail.com'
 EMAIL_HOST_PASSWORD = 'wnuc jjjk yduf fqxn'
-DEFAULT_FROM_EMAIL = 'loccidental@info.com'
+DEFAULT_FROM_EMAIL = 'asdieng.elc@gmail.com'
 
 

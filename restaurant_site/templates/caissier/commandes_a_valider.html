@@ -46,7 +46,7 @@
 
 {% block content %}
     <div class="container">
-        <h1>Valider les Commandes en Attente</h1>
+        <h1>Commandes en Attente de Paiement</h1>
 
         {% if messages %}
             <ul class="message-list">
@@ -75,7 +75,7 @@
                             <td>{{ commande.date_commande|date:"d/m/Y H:i" }}</td>
                             <td>{{ commande.get_statut_display }}</td>
                             <td>
-                                <form method="post" action="{% url 'generer_facture_pdf' commande.id %}">
+                                <form method="post" action="{% url 'valider_paiement' commande.id %}">
                                     {% csrf_token %}
                                     <input type="hidden" name="commande_id" value="{{ commande.id }}">
                                     <button type="submit">Valider la Commande</button>
@@ -87,6 +87,39 @@
             </table>
         {% else %}
             <p>Aucune commande en attente pour le moment.</p>
+        {% endif %}
+
+        <hr class="my-5">
+
+        <h1>Commandes Validées (Paiement en Espèces)</h1>
+        
+        {% if commandes_validees_par_caissier %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>N° Commande</th>
+                        <th>Client</th>
+                        <th>Date de Commande</th>
+                        <th>Statut</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes_validees_par_caissier %}
+                        <tr>
+                            <td>{{ commande.id }}</td>
+                            <td>{{ commande.client.username }}</td> 
+                            <td>{{ commande.date_commande|date:"d/m/Y H:i" }}</td>
+                            <td>{{ commande.get_statut_display }}</td>
+                            <td>
+                                <a href="{% url 'caissier_generer_facture_pdf' commande.id %}" class="btn btn-success ms-2" target="_blank">Générer Facture</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Aucune commande en cours dont le paiement a été validé par le caissier.</p>
         {% endif %}
     </div>
 {% endblock %}

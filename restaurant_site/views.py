@@ -272,8 +272,8 @@ def modifier_quantite(request, plat_id):
             
             request.session['panier'] = panier
         except (ValueError, KeyError):
-            pass 
-    return redirect('voir_panier')
+            pass
+    return redirect('panier')
 
 def supprimer_du_panier(request, plat_id):
     panier = request.session.get('panier', {})
@@ -283,7 +283,7 @@ def supprimer_du_panier(request, plat_id):
         del panier[plat_id_str]
     
     request.session['panier'] = panier
-    return redirect('voir_panier')
+    return redirect('panier')
 
 @login_required
 def faire_reservation(request):
@@ -628,25 +628,45 @@ def traitement_commande(request):
 
     return redirect('menu')
 
+# @role_required('Caissier')
+# def commandes_a_valider(request):
+
+#     commandes_en_attente = Commande.objects.filter(statut='en_attente')
+
+#     if request.method == 'POST':
+#         commande_id = request.POST.get('commande_id')
+#         if commande_id:
+#             try:
+#                 commande = get_object_or_404(Commande, id=commande_id, statut='en_attente')
+#                 commande.statut = 'en_cours'
+#                 commande.save()
+#                 messages.success(request, f"La commande {commande.commande_id} a été validée et est maintenant 'en cours'.")
+#             except Exception as e:
+#                 messages.error(request, f"Une erreur s'est produite lors de la validation : {e}")
+#         return redirect('admin_valider_commandes')
+
+#     context = {
+#         'commandes_en_attente': commandes_en_attente
+#     }
+
+#     return render(request, 'caissier/commandes_a_valider.html', context)
+
+
 @role_required('Caissier')
 def commandes_a_valider(request):
-
-    commandes_en_attente = Commande.objects.filter(statut='en_attente')
-
-    if request.method == 'POST':
-        commande_id = request.POST.get('commande_id')
-        if commande_id:
-            try:
-                commande = get_object_or_404(Commande, id=commande_id, statut='en_attente')
-                commande.statut = 'en_cours'
-                commande.save()
-                messages.success(request, f"La commande {commande.commande_id} a été validée et est maintenant 'en cours'.")
-            except Exception as e:
-                messages.error(request, f"Une erreur s'est produite lors de la validation : {e}")
-        return redirect('admin_valider_commandes')
+    commandes_en_attente = Commande.objects.filter(
+        statut='en_attente',
+        moyen_paiement='especes'
+    ).order_by('-date_commande')
+    
+    commandes_validees_par_caissier = Commande.objects.filter(
+        statut='en_cours',
+        moyen_paiement='especes'
+    ).order_by('-date_commande')
 
     context = {
-        'commandes_en_attente': commandes_en_attente
+        'commandes_en_attente': commandes_en_attente,
+        'commandes_validees_par_caissier': commandes_validees_par_caissier,
     }
 
     return render(request, 'caissier/commandes_a_valider.html', context)
@@ -654,38 +674,33 @@ def commandes_a_valider(request):
 
 @role_required('Caissier')
 def valider_paiement(request, commande_id):
-    commande = get_object_or_404(Commande, id=commande_id, moyen_paiement='espece')
+    if request.method == 'POST':
+        try:
+            commande = get_object_or_404(
+                Commande, 
+                id=commande_id, 
+                moyen_paiement='especes'
+            )
+            
+            if commande.statut == 'en_attente':
+                commande.statut = 'en_cours' 
+                commande.save()
+                messages.success(request, f"Le paiement de la commande #{commande.id} a été validé. La commande est maintenant 'En cours de préparation'.")
 
-    if commande.statut == 'en_attente':
-        commande.statut = 'en_cours' 
-        commande.save()
-        messages.success(request, f"Le paiement de la commande #{commande.id} a été validé. La commande est maintenant 'En cours de préparation'.")
+                messages.info(request, 
+                    f"Cliquez <a href=\"{reverse('generer_facture_pdf', args=[commande.id])}\" target=\"_blank\" class=\"alert-link\">ici</a> pour générer la facture PDF de la commande #{commande.id}.")
 
-        messages.info(request, 
-                      f"Cliquez <a href=\"{reverse('generer_facture_pdf', args=[commande.id])}\" target=\"_blank\" class=\"alert-link\">ici</a> pour générer la facture PDF de la commande #{commande.id}.")
+            elif commande.statut == 'en_cours':
+                messages.info(request, f"La commande #{commande.id} est déjà 'En cours de préparation'. Aucune action nécessaire.")
+            else:
+                messages.warning(request, f"La commande #{commande.id} ne peut pas être validée car son statut est '{commande.get_statut_display()}'.")
 
-    elif commande.statut == 'en_cours':
-        messages.info(request, f"La commande #{commande.id} est déjà 'En cours de préparation'. Aucune action nécessaire.")
-    else:
-        messages.warning(request, f"La commande #{commande.id} ne peut pas être validée car son statut est '{commande.get_statut_display()}'.")
+        except Commande.DoesNotExist:
+            messages.error(request, "Commande invalide ou le moyen de paiement n'est pas en espèces.")
+        except Exception as e:
+            messages.error(request, f"Une erreur inattendue est survenue: {e}")
 
     return redirect('commandes_a_valider')
-
-
-def get_address_from_coords(latitude, longitude):
-    geolocator = Nominatim(user_agent="L_Occidental_Restaurant_Facture_PDF")
-    try:
-        location = geolocator.reverse(f"{latitude}, {longitude}", timeout=10) 
-        if location:
-            return location.address
-        else:
-            return None
-    except (GeocoderTimedOut, GeocoderServiceError) as e:
-        print(f"Erreur Nominaatim (timeout ou service) lors du géocodage PDF : {e}")
-        return None
-    except Exception as e:
-        print(f"Erreur inattendue lors du géocodage inverse pour PDF : {e}")
-        return None
 
 @login_required
 def generer_facture_pdf(request, commande_id):
@@ -745,6 +760,60 @@ def generer_facture_pdf(request, commande_id):
     messages.error(request, f"Impossible de générer la facture PDF. Erreur: {pdf.err}")
     return redirect('detail_commande', commande_id=commande.id)
 
+@role_required('Caissier')
+def caissier_generer_facture_pdf(request, commande_id):
+    commande = get_object_or_404(Commande, id=commande_id)
+
+    if commande.statut == 'en_attente' or commande.statut == 'annulee':
+        messages.warning(request, "La facture ne peut pas être générée pour une commande en attente ou annulée.")
+        return redirect('detail_commande', commande_id=commande.id)
+
+    adresse_livraison_display = commande.adresse_livraison
+
+    if commande.mode_commande == 'livraison' and commande.adresse_livraison:
+        try:
+            lat_str, lon_str = commande.adresse_livraison.split(',')
+            latitude = float(lat_str.strip())
+            longitude = float(lon_str.strip())
+            
+            resolved_address = get_address_from_coords(latitude, longitude)
+            
+            if resolved_address:
+                adresse_livraison_display = resolved_address
+            else:
+                adresse_livraison_display = f"Erreur de résolution d'adresse (Coordonnées: {commande.adresse_livraison})"
+        except (ValueError, IndexError):
+            pass
+        except Exception as e:
+            print(f"Erreur inattendue lors du traitement de l'adresse de livraison pour PDF: {e}")
+            adresse_livraison_display = f"Erreur de résolution d'adresse (Coordonnées: {commande.adresse_livraison})"
+
+    template_path = 'client/facture_pdf.html'
+    context = {
+        'commande': commande,
+        'lignes_commande': commande.lignes.all(),
+        'adresse_livraison_display': adresse_livraison_display,
+        'date_generation': datetime.now().strftime('%d/%m/%Y %H:%M'),
+    }
+    template = get_template(template_path)
+    html = template.render(context)
+
+    response = BytesIO()
+    pdf = pisa.CreatePDF(
+        BytesIO(html.encode("UTF-8")),
+        dest=response,
+        encoding='UTF-8'
+    )
+
+    if not pdf.err:
+        response_pdf = HttpResponse(response.getvalue(), content_type='application/pdf')
+        response_pdf['Content-Disposition'] = f'attachment; filename="facture_commande_{commande.id}.pdf"'
+        return response_pdf
+
+    messages.error(request, f"Impossible de générer la facture PDF. Erreur: {pdf.err}")
+    return redirect('detail_commande', commande_id=commande.id)
+
+
 @login_required
 def liste_reservations_admin(request):
     reservations_a_confirmer = Reservation.objects.filter(
@@ -776,7 +845,7 @@ def confirmer_reservation_par_admin(request, reservation_id):
         else:
             messages.info(request, f"La réservation #{reservation.id} est déjà confirmée.")
 
-    return redirect('liste_reservations_admin')
+    return redirect('admin_reservation_list')
 
 @login_required
 def annuler_reservation_par_admin(request, reservation_id):
@@ -792,7 +861,7 @@ def annuler_reservation_par_admin(request, reservation_id):
     else:
         messages.error(request, "Requête non valide.")
 
-    return redirect('liste_reservations_admin')
+    return redirect('admin_reservation_list')
 
 
 # =============================================================
@@ -981,10 +1050,10 @@ def reservation_list(request):
     reservations = Reservation.objects.all().order_by('-created_at')
     return render(request, 'admin_panel/reservations/list.html', {'reservations': reservations})
 
-@user_passes_test(is_admin)
-def reservation_toggle_confirmation(request, pk):
-    if request.method == 'POST':
-        reservation = get_object_or_404(Reservation, pk=pk)
-        reservation.est_confirmee = not reservation.est_confirmee
-        reservation.save()
-    return redirect('admin_reservation_list')
+# @user_passes_test(is_admin)
+# def reservation_toggle_confirmation(request, pk):
+#     if request.method == 'POST':
+#         reservation = get_object_or_404(Reservation, pk=pk)
+#         reservation.est_confirmee = not reservation.est_confirmee
+#         reservation.save()
+#     return redirect('admin_reservation_list')

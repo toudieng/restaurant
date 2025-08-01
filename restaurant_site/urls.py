@@ -46,6 +46,7 @@ urlpatterns = [
     path('caissier/commandes/', views.commandes_a_valider, name='commandes_a_valider'),
     #path('caissier/valider/<int:commande_id>/', views.valider_paiement, name='valider_paiement'),
     path('caissier/commandes/<int:commande_id>/valider-paiement/', views.valider_paiement, name='valider_paiement'),
+    path('caissier/commandes/<int:commande_id>/facture-caissier/pdf/', views.caissier_generer_facture_pdf, name='caissier_generer_facture_pdf'),
 
     path('serveur/dashboard/', views.serveur_dashboard, name='serveur'),
     path('serveur/marquer_servie/<int:commande_id>/', views.marquer_servie, name='marquer_servie'),
@@ -56,7 +57,6 @@ urlpatterns = [
     path('commande/<int:commande_id>/facture/pdf/', views.generer_facture_pdf, name='generer_facture_pdf'),
 
     # path('admin-dashboard/reservations/', views.liste_reservations_admin, name='liste_reservations_admin'),
-    # path('admin-dashboard/reservations/confirmer/<int:reservation_id>/', views.confirmer_reservation_par_admin, name='confirmer_reservation_par_admin'),
     # path('admin/reservations/annuler/<int:reservation_id>/', views.annuler_reservation_par_admin, name='annuler_reservation_par_admin'),
 
     path('admin_panel/', views.categorie_list, name='admin_dashboard'),
@@ -74,7 +74,8 @@ urlpatterns = [
 
     # URLs pour les Réservations (extension)
     path('admin_panel/reservations/', views.reservation_list, name='admin_reservation_list'),
-    path('admin_panel/reservations/toggle-confirmation/<int:pk>/', views.reservation_toggle_confirmation, name='admin_reservation_toggle_confirmation'),
+    path('admin_panel/reservations/confirmer/<int:reservation_id>/', views.confirmer_reservation_par_admin, name='confirmer_reservation_par_admin'),
+    # path('admin-dashboard/reservations/confirmer/<int:reservation_id>/', views.confirmer_reservation_par_admin, name='confirmer_reservation_par_admin'),
 
 ]
 

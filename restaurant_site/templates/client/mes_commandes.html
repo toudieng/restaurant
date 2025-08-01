@@ -6,14 +6,6 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">Historique de vos commandes</h2>
 
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-
     {% if commandes %}
         <div class="list-group">
             {% for commande in commandes %}

@@ -175,7 +175,7 @@ def menu(request):
             Q(description__icontains=search_query)
         ).order_by('nom')
     else:
-        plats = plats.order_by('nom')
+        plats = plats.order_by('specialite_du_jour')
 
     panier_count = sum(item['quantite'] for item in request.session.get('panier', {}).values())
 

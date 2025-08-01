@@ -173,7 +173,7 @@ def menu(request):
         plats = plats.filter(
             Q(nom__icontains=search_query) |
             Q(description__icontains=search_query)
-        ).order_by('nom')
+        ).order_by('specialite_du_jour')
     else:
         plats = plats.order_by('specialite_du_jour')
 

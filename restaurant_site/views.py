@@ -170,23 +170,12 @@ def menu(request):
     plats = Plat.objects.all()
 
     if search_query:
-        plats_recherche = plats.filter(
+        plats = plats.filter(
             Q(nom__icontains=search_query) |
             Q(description__icontains=search_query)
-        )
-
-        specialites_du_jour = plats_recherche.filter(specialite_du_jour=True).order_by('nom')
-        plats_disponibles = plats_recherche.filter(specialite_du_jour=False, est_epuise=False).order_by('nom')
-        plats_epuises = plats_recherche.filter(est_epuise=True).order_by('nom')
-
-        plats = list(chain(specialites_du_jour, plats_disponibles, plats_epuises))
-
+        ).order_by('nom')
     else:
-        specialites_du_jour = plats.filter(specialite_du_jour=True).order_by('nom')
-        plats_disponibles = plats.filter(specialite_du_jour=False, est_epuise=False).order_by('nom')
-        plats_epuises = plats.filter(est_epuise=True).order_by('nom')
-        
-        plats = list(chain(specialites_du_jour, plats_disponibles, plats_epuises))
+        plats = plats.order_by('nom')
 
     panier_count = sum(item['quantite'] for item in request.session.get('panier', {}).values())
 

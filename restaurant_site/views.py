@@ -225,23 +225,7 @@ def ajouter_au_panier(request, plat_id):
     
     return redirect('menu')
 
-
-# def ajouter_au_panier(request, plat_id):
-#     plat = get_object_or_404(Plat, id=plat_id)
-#     panier = request.session.get('panier', {})
-    
-#     if str(plat.id) in panier:
-#         panier[str(plat.id)]['quantite'] += 1
-#     else:
-#         panier[str(plat.id)] = {
-#             'nom': plat.nom,
-#             'prix': str(plat.prix),
-#             'quantite': 1
-#         }
-    
-#     request.session['panier'] = panier
-#     return redirect('menu') FOCNTIONNE
-
+@login_required
 def voir_panier(request):
     panier = request.session.get('panier', {})
     
@@ -256,6 +240,7 @@ def voir_panier(request):
     }
     return render(request, 'client/panier.html', context)
 
+@login_required
 def modifier_quantite(request, plat_id):
     if request.method == 'POST':
         panier = request.session.get('panier', {})
@@ -275,6 +260,7 @@ def modifier_quantite(request, plat_id):
             pass
     return redirect('panier')
 
+@login_required
 def supprimer_du_panier(request, plat_id):
     panier = request.session.get('panier', {})
     plat_id_str = str(plat_id)
@@ -382,7 +368,7 @@ def validation_commande(request):
     }
     return render(request, 'client/validation_commande.html', context)
 
-
+@login_required
 def payer_commande(request):
     if not request.user.is_authenticated:
         return redirect('connexion')
@@ -421,7 +407,7 @@ def payer_commande(request):
         messages.error(request, f"Erreur lors de la création de la facture PayDunya : {invoice.response_text}")
         return render(request, 'client/erreur.html', {'message': invoice.response_text})
 
-
+@login_required
 def paiement_success(request):
     token = request.GET.get("token")
     commande_id = request.GET.get("commande_id")
@@ -627,29 +613,6 @@ def traitement_commande(request):
     messages.error(request, "Méthode de requête non autorisée.")
 
     return redirect('menu')
-
-# @role_required('Caissier')
-# def commandes_a_valider(request):
-
-#     commandes_en_attente = Commande.objects.filter(statut='en_attente')
-
-#     if request.method == 'POST':
-#         commande_id = request.POST.get('commande_id')
-#         if commande_id:
-#             try:
-#                 commande = get_object_or_404(Commande, id=commande_id, statut='en_attente')
-#                 commande.statut = 'en_cours'
-#                 commande.save()
-#                 messages.success(request, f"La commande {commande.commande_id} a été validée et est maintenant 'en cours'.")
-#             except Exception as e:
-#                 messages.error(request, f"Une erreur s'est produite lors de la validation : {e}")
-#         return redirect('admin_valider_commandes')
-
-#     context = {
-#         'commandes_en_attente': commandes_en_attente
-#     }
-
-#     return render(request, 'caissier/commandes_a_valider.html', context)
 
 
 @role_required('Caissier')
@@ -952,14 +915,8 @@ def changer_statut_commande(request, id):
 def mettre_a_jour_total_commande(sender, instance, **kwargs):
     instance.commande.calculer_total()
 
-
-
-
-
-
 def is_admin(user):
     return user.is_authenticated and user.role == 'Administrateur'
-
 
 @user_passes_test(is_admin)
 def categorie_list(request):
@@ -1049,11 +1006,3 @@ def plat_toggle_status(request, pk):
 def reservation_list(request):
     reservations = Reservation.objects.all().order_by('-created_at')
     return render(request, 'admin_panel/reservations/list.html', {'reservations': reservations})
-
-# @user_passes_test(is_admin)
-# def reservation_toggle_confirmation(request, pk):
-#     if request.method == 'POST':
-#         reservation = get_object_or_404(Reservation, pk=pk)
-#         reservation.est_confirmee = not reservation.est_confirmee
-#         reservation.save()
-#     return redirect('admin_reservation_list')

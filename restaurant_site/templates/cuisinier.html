@@ -55,7 +55,7 @@
                     <th>Identifiant</th>
                     <th>Statut</th>
                     <th>Plats</th>
-                    <th>Images</th> {# C'est l'en-tête pour la colonne d'images #}
+                    <th>Images</th>
                 </tr>
             </thead>
             <tbody>
@@ -91,7 +91,7 @@
                             </ul>
                         </td>
                         <td>
-                            <ul class="image-list"> {# Appliquez la nouvelle classe ici #}
+                            <ul class="image-list">
                                 {% for ligne in commande.lignes.all %}
                                     {% if ligne.plat.image %}
                                         <li>

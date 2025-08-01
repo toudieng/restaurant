@@ -17,8 +17,6 @@ urlpatterns = [
     path('changer-statut-commande/<int:id>/', views.changer_statut_commande, name='changer_statut_commande'),
     path('cuisinier/dashboard', views.cuisinier_dashboard, name='cuisinier_dashboard'),
 
-
-
     path('renitialiser_password/', auth_views.PasswordResetView.as_view(
         template_name='authentification/renitialiser_password.html'), name='password_reset'),
     path('renitialisation_password_terminer/', auth_views.PasswordResetDoneView.as_view(

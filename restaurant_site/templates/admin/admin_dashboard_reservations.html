@@ -1,4 +1,4 @@
-{% extends 'client/base.html' %} {# Utilisez votre template de base #}
+{% extends 'client/base.html' %}
 {% load static %}
 
 {% block title %}Admin Dashboard Réservations{% endblock %}
@@ -44,11 +44,11 @@
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-success btn-sm">Confirmer</button>
                             </form>
-                            <form action="{% url 'annuler_reservation_par_admin' reservation.id %}" method="post" style="display: inline; margin-left: 5px;"> {# Ajoutez une petite marge pour l'espacement #}
+                            <form action="{% url 'annuler_reservation_par_admin' reservation.id %}" method="post" style="display: inline; margin-left: 5px;">  Ajoutez une petite marge pour l'espacement #}
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-danger btn-sm">Annuler</button>
                             </form>
-                        {% elif reservation.statut == 'annulee' %} {# Si vous avez un champ 'statut' #}
+                        {% elif reservation.statut == 'annulee' %}
                             <span class="text-danger">Annulée</span>
                         {% else %}
                             <span class="text-success">Confirmée</span>
@@ -62,8 +62,6 @@
     {% else %}
         <p class="alert alert-info">Aucune réservation en attente de confirmation pour le moment.</p>
     {% endif %}
-
-    {# Vous pouvez ajouter d'autres sections ici pour les réservations confirmées, passées, etc. #}
 
 </main>
 {% endblock %}

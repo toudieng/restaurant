@@ -153,11 +153,11 @@ WAVE_API_KEY = 'votre_cle_api'
 WAVE_SECRET_KEY = 'votre_cle_secrete'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com' # Ou votre serveur SMTP (ex: smtp.mail.yahoo.com, smtp.outlook.com)
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_USE_TLS = True # Ou False si vous utilisez SSL sur le port 465 (EMAIL_USE_SSL = True)
-EMAIL_HOST_USER = 'asdieng.elc@gmail.com' # Votre adresse email
-EMAIL_HOST_PASSWORD = 'wnuc jjjk yduf fqxn' # Votre mot de passe ou mot de passe d'application
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'asdieng.elc@gmail.com'
+EMAIL_HOST_PASSWORD = 'wnuc jjjk yduf fqxn'
 DEFAULT_FROM_EMAIL = 'loccidental@info.com'
 
 

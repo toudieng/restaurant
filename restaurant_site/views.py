@@ -194,7 +194,7 @@ def set_panier(request, panier_data):
     request.session['panier'] = panier_data
     request.session.modified = True
 
-
+@login_required
 def ajouter_au_panier(request, plat_id):
     plat = get_object_or_404(Plat, id=plat_id)
     panier = get_panier(request)

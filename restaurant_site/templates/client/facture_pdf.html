@@ -115,7 +115,7 @@
                 {% if commande.transaction_id %}
                     <td><strong>ID de Transaction :</strong> {{ commande.transaction_id }}</td>
                 {% else %}
-                    <td></td> {# Cellule vide pour maintenir l'alignement si transaction_id n'existe pas #}
+                    <td></td>
                 {% endif %}
             </tr>
         </table>
@@ -131,7 +131,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for ligne in commande.lignes.all %} {# Assurez-vous que 'lignes' est le related_name de LigneDeCommande #}
+                {% for ligne in commande.lignes.all %}
                 <tr>
                     <td>{{ ligne.plat.nom }}</td>
                     <td class="text-right">{{ ligne.quantite }}</td>

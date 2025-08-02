@@ -273,12 +273,10 @@ def supprimer_du_panier(request, plat_id):
 
 @login_required
 def faire_reservation(request):
-    tables_disponibles = Table.objects.all().order_by('numero')
     if request.method == 'POST':
         date_res_str = request.POST.get('date_reservation')
         heure_res_str = request.POST.get('heure_reservation')
         nb_personnes = request.POST.get('nombre_personnes')
-        num_table = request.POST.get('table')
 
         try:
             date_reservation = datetime.strptime(date_res_str, '%Y-%m-%d').date()
@@ -296,16 +294,6 @@ def faire_reservation(request):
                  messages.error(request, "Le nombre de personnes doit être supérieur à zéro.")
                  return redirect('faire_reservation')
 
-            if not num_table:
-                messages.error(request, "Veuillez sélectionner une table.")
-                return redirect('faire_reservation')
-
-            try:
-                table_selectionnee = Table.objects.get(numero=num_table)
-            except Table.DoesNotExist:
-                messages.error(request, "La table sélectionnée n'existe pas.")
-                return redirect('faire_reservation')
-
         except ValueError:
             messages.error(request, "Format de date ou d'heure invalide.")
             return redirect('faire_reservation')
@@ -315,12 +303,10 @@ def faire_reservation(request):
             date_reservation=date_reservation,
             heure_reservation=heure_reservation,
             nombre_personnes=nb_personnes,
-            table=table_selectionnee,
             est_confirmee=False
         )
 
-        messages.success(request, f"Votre réservation pour la table {table_selectionnee.numero} a été enregistrée. En attente de confirmation.")
-        return redirect('menu')
+        #return redirect('menu')
 
     reservations_confirmees = Reservation.objects.filter(
         client=request.user,
@@ -331,7 +317,6 @@ def faire_reservation(request):
     context = {
         'min_date': date.today().isoformat(),
         'min_time': datetime.now().strftime('%H:%M'),
-        'tables': tables_disponibles,
         'reservations_confirmees' : reservations_confirmees,
     }
     return render(request, 'client/reservation.html', context)
